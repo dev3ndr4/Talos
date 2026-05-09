@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from app.domains.auth.router import get_current_user
 from app.domains.chat.schemas import ChatSessionCreate, ChatSessionResponse, MessageCreate, MessageResponse
 from app.domains.chat import service
+from app.core.database import db
 from typing import List, Annotated
 from bson import ObjectId
 
@@ -53,7 +54,3 @@ async def send_message(
     background_tasks.add_task(service.update_summaries, current_user["id"], session_id)
     
     return assistant_msg
-
-# We need to import db here or pass it in. 
-# Better yet, put the find_one logic in the service.
-from app.core.database import db

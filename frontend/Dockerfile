@@ -32,6 +32,6 @@ ENV PORT=80
 EXPOSE $PORT
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:$PORT/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:$PORT/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

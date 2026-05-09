@@ -7,6 +7,11 @@ from app.domains.chat.router import router as chat_router
 
 app = FastAPI(title="Talos API", version="0.1.0")
 
+@app.on_event("startup")
+async def startup_event():
+    print("Talos API is starting up...")
+    print("Check: Root endpoint is available at /")
+
 @app.get("/")
 async def root():
     return {"message": "Talos Business Architect API is active"}
