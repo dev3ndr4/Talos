@@ -1,8 +1,9 @@
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: backend.Dockerfile
+      context: .
+      dockerfile: Dockerfile
+      target: backend
     environment:
       - MONGODB_URL=${MONGODB_URL}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -30,8 +31,9 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: frontend.Dockerfile
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
       args:
         - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     environment:
@@ -57,8 +59,9 @@ services:
 
   sandbox:
     build:
-      context: ./sandbox
-      dockerfile: sandbox.Dockerfile
+      context: .
+      dockerfile: Dockerfile
+      target: sandbox
     volumes:
       - ./sandbox/workspace:/workspace
     networks:
