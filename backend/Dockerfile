@@ -15,17 +15,19 @@ RUN pip install --user --no-cache-dir -r requirements.txt
 # Stage 2: Runtime stage
 FROM python:3.12-slim
 
-# Create a non-root user
-RUN groupadd -r talos && useradd -r -g talos talos
+# Create a non-root user with a home directory
+RUN groupadd -r talos && useradd -r -m -g talos talos
 
 WORKDIR /app
 
 # Copy only the installed packages from the builder stage
 COPY --from=builder /root/.local /home/talos/.local
+
+# Copy application code
 COPY . .
 
-# Ensure the app directory is owned by the non-root user
-RUN chown -R talos:talos /app
+# Ensure the app and home directory are owned by the non-root user
+RUN chown -R talos:talos /app /home/talos
 
 # Set environment variables
 ENV PATH=/home/talos/.local/bin:$PATH
