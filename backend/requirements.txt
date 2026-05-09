@@ -7,3 +7,5 @@ pydantic-settings
 python-multipart
 python-dotenv
 httpx
+passlib[bcrypt]
+python-jose[cryptography]

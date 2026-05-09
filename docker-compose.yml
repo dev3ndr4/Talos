@@ -6,8 +6,9 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - MONGODB_URL=mongodb://db:27017
+      - MONGODB_URL=${MONGODB_URL:-mongodb://db:27017}
       - LLM_API_KEY=${LLM_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-it}
     ports:
       - "8000:8000"
     depends_on:
@@ -23,6 +24,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     ports:
       - "3000:3000"
     depends_on:
