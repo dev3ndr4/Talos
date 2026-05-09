@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+litellm
+motor
+pydantic
+pydantic-settings
+python-multipart
+python-dotenv
+httpx

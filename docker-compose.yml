@@ -1,0 +1,56 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    environment:
+      - MONGODB_URL=mongodb://db:27017
+      - LLM_API_KEY=${LLM_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - sandbox
+    networks:
+      - talos-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - talos-network
+
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - talos-db-data:/data/db
+    networks:
+      - talos-network
+
+  sandbox:
+    build:
+      context: ./sandbox
+      dockerfile: Dockerfile
+    volumes:
+      - ./sandbox/workspace:/workspace
+    networks:
+      - talos-network
+
+networks:
+  talos-network:
+    driver: bridge
+
+volumes:
+  talos-db-data:
