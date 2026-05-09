@@ -22,6 +22,11 @@ services:
       start_period: 30s
     networks:
       - talos-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -44,6 +49,11 @@ services:
       start_period: 30s
     networks:
       - talos-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   sandbox:
     build:
@@ -53,6 +63,11 @@ services:
       - ./sandbox/workspace:/workspace
     networks:
       - talos-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   talos-network:
