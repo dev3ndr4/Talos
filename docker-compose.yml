@@ -3,8 +3,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    volumes:
-      - ./backend:/app
     environment:
       - MONGODB_URL=${MONGODB_URL}
       - LLM_API_KEY=${LLM_API_KEY}
@@ -20,13 +18,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - backend
     networks:

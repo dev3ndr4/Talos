@@ -1,8 +1,11 @@
 FROM python:3.12-slim
 
+# Create a non-root user for execution
+RUN groupadd -r sandbox && useradd -r -g sandbox sandbox
+
 WORKDIR /workspace
 
-# Install common data science/processing libraries for the coding agent
+# Install common data science/processing libraries
 RUN pip install --no-cache-dir \
     pandas \
     numpy \
@@ -10,7 +13,10 @@ RUN pip install --no-cache-dir \
     matplotlib \
     openpyxl
 
-# Set an entrypoint that keeps the container alive (e.g., a simple API or a sleep loop)
-# For this prototype, we will use a simple sleep loop, 
-# though a small execution server (like a micro-FastAPI) is recommended for production.
+# Change ownership to the non-root user
+RUN chown -R sandbox:sandbox /workspace
+
+USER sandbox
+
+# Keep the container alive
 CMD ["tail", "-f", "/dev/null"]
