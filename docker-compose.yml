@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - MONGODB_URL=${MONGODB_URL}
-      - LLM_API_KEY=${LLM_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
       - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-it}
       - PORT=${BACKEND_PORT:-8000}
     ports:
