@@ -6,13 +6,12 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - MONGODB_URL=${MONGODB_URL:-mongodb://db:27017}
+      - MONGODB_URL=${MONGODB_URL}
       - LLM_API_KEY=${LLM_API_KEY}
       - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-it}
     ports:
       - "8000:8000"
     depends_on:
-      - db
       - sandbox
     networks:
       - talos-network
@@ -33,15 +32,6 @@ services:
     networks:
       - talos-network
 
-  db:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - talos-db-data:/data/db
-    networks:
-      - talos-network
-
   sandbox:
     build:
       context: ./sandbox
@@ -54,6 +44,3 @@ services:
 networks:
   talos-network:
     driver: bridge
-
-volumes:
-  talos-db-data:
