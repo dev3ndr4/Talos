@@ -34,4 +34,8 @@ This document takes precedence over all other architectural guidance and serves 
 
 *   **Validation:** All incoming data must be validated using Zod (frontend) and Pydantic (backend).
 *   **Security:** Never commit API keys or secrets. Use environment variables.
-*   **UX:** Use Lucide icons only. Strictly no emojis in the UI. Maintain a "Soft/Brand Focused" aesthetic.
+*   **Design & UX:** All UI development must strictly adhere to the standards defined in [DESIGN.md](./DESIGN.md).
+    *   Maintain a "Soft/Brand Focused" aesthetic.
+    *   Use Lucide icons only (`stroke-width={1.5}`).
+    *   Strictly no emojis in the UI.
+    *   Implement "Glass Box" reasoning traces for all AI interactions.

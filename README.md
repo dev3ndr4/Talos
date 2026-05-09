@@ -34,6 +34,7 @@ talos/
 
 ## Documentation
 
+*   [Design System](./DESIGN.md) - UI/UX standards and AI interaction patterns.
 *   [Frontend README](./frontend/README.md)
 *   [Backend README](./backend/README.md)
 *   [Sandbox README](./sandbox/README.md)
