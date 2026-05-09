@@ -16,6 +16,10 @@ async def startup_event():
 async def root():
     return {"message": "Talos Business Architect API is active"}
 
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
 # Include domain routers
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
