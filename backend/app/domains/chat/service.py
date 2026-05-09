@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from app.core.database import db
+from app.core.config import settings
 from app.domains.chat.schemas import ChatSessionCreate, MessageBase
 from bson import ObjectId
 import litellm
@@ -76,8 +77,9 @@ Follow the 'Glass Box' philosophy: explain your reasoning in a clear, transparen
     
     # Call LiteLLM
     response = litellm.completion(
-        model="gemini/gemini-1.5-flash",
+        model=settings.LLM_MODEL,
         messages=messages,
+        api_key=settings.GEMINI_API_KEY
     )
     
     content = response.choices[0].message.content
@@ -109,8 +111,9 @@ LATEST INTERACTION:
 NEW CHAT SUMMARY:"""
     
     chat_resp = litellm.completion(
-        model="gemini/gemini-1.5-flash",
-        messages=[{"role": "user", "content": chat_prompt}]
+        model=settings.LLM_MODEL,
+        messages=[{"role": "user", "content": chat_prompt}],
+        api_key=settings.GEMINI_API_KEY
     )
     new_chat_summary = chat_resp.choices[0].message.content
 
@@ -127,8 +130,9 @@ LATEST INTERACTION:
 NEW USER PROFILE MEMORY:"""
 
     user_resp = litellm.completion(
-        model="gemini/gemini-1.5-flash",
-        messages=[{"role": "user", "content": user_prompt}]
+        model=settings.LLM_MODEL,
+        messages=[{"role": "user", "content": user_prompt}],
+        api_key=settings.GEMINI_API_KEY
     )
     new_user_summary = user_resp.choices[0].message.content
 

@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
     DATABASE_NAME: str = "talos_db"
 
+    # LLM Settings
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+
     class Config:
         case_sensitive = True
 
