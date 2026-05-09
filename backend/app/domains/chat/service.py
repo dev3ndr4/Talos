@@ -76,7 +76,7 @@ Follow the 'Glass Box' philosophy: explain your reasoning in a clear, transparen
     messages.append({"role": "user", "content": current_message})
     
     # Call LiteLLM
-    response = litellm.completion(
+    response = await litellm.acompletion(
         model=settings.LLM_MODEL,
         messages=messages,
         api_key=settings.GEMINI_API_KEY
@@ -110,7 +110,7 @@ LATEST INTERACTION:
 
 NEW CHAT SUMMARY:"""
     
-    chat_resp = litellm.completion(
+    chat_resp = await litellm.acompletion(
         model=settings.LLM_MODEL,
         messages=[{"role": "user", "content": chat_prompt}],
         api_key=settings.GEMINI_API_KEY
@@ -129,7 +129,7 @@ LATEST INTERACTION:
 
 NEW USER PROFILE MEMORY:"""
 
-    user_resp = litellm.completion(
+    user_resp = await litellm.acompletion(
         model=settings.LLM_MODEL,
         messages=[{"role": "user", "content": user_prompt}],
         api_key=settings.GEMINI_API_KEY

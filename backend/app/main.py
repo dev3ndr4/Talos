@@ -6,6 +6,7 @@ from app.domains.auth.router import router as auth_router
 from app.domains.chat.router import router as chat_router
 
 import logging
+import asyncio
 from app.core.database import client, db
 
 logging.basicConfig(level=logging.INFO)
@@ -15,17 +16,24 @@ app = FastAPI(title="Talos API", version="0.1.0")
 
 @app.on_event("startup")
 async def startup_event():
+    print("CRITICAL: Talos API startup sequence initiated", flush=True)
     logger.info("Talos API is starting up...")
     try:
-        # Check MongoDB connection
-        await client.admin.command('ping')
+        # Check MongoDB connection with timeout
+        print("DEBUG: Pinging MongoDB...", flush=True)
+        await asyncio.wait_for(client.admin.command('ping'), timeout=10.0)
         logger.info("Successfully connected to MongoDB.")
+        print("DEBUG: MongoDB connection successful", flush=True)
+    except asyncio.TimeoutError:
+        logger.error("Failed to connect to MongoDB: Connection timed out after 10s")
+        print("ERROR: MongoDB connection timeout", flush=True)
     except Exception as e:
         logger.error(f"Failed to connect to MongoDB: {e}")
-        # We don't exit here to allow the /health endpoint to potentially report the error
+        print(f"ERROR: MongoDB connection failed: {e}", flush=True)
     
     logger.info("Check: Root endpoint is available at /")
     logger.info("Check: Health endpoint is available at /health")
+    print("CRITICAL: Talos API startup sequence completed", flush=True)
 
 @app.get("/")
 async def root():
