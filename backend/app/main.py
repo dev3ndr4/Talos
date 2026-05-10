@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.domains.knowledge.router import router as knowledge_router
 from app.domains.comms.router import router as comms_router
 from app.domains.coding.router import router as coding_router
@@ -13,6 +14,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("talos")
 
 app = FastAPI(title="Talos API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 async def startup_event():
