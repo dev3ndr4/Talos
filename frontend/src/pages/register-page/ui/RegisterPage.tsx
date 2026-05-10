@@ -3,40 +3,41 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '@/shared/api/base';
-import { useUserStore } from '@/entities/user/model/store';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ArrowRight, ShieldCheck, Zap, Globe } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { LayoutGrid, ArrowRight, ShieldCheck, Zap, Globe, CheckCircle2 } from 'lucide-react';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Please confirm your password'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const fetchMe = useUserStore((state) => state.fetchMe);
-  const successMessage = (location.state as any)?.message;
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
-      const response = await api.post('/auth/login', data);
-      localStorage.setItem('talos_token', response.data.access_token);
-      await fetchMe();
-      navigate('/');
+      await api.post('/auth/register', {
+        email: data.email,
+        password: data.password,
+      });
+      navigate('/login', { state: { message: 'Account created successfully! Please sign in.' } });
     } catch (error: any) {
       setError('root', {
-        message: error.response?.data?.detail || 'Login failed. Please check your credentials.',
+        message: error.response?.data?.detail || 'Registration failed. Please try again.',
       });
     }
   };
@@ -61,30 +62,28 @@ export const LoginPage = () => {
           </div>
 
           <h1 className="text-5xl font-bold text-white leading-tight mb-6">
-            Architecting the <br />
-            <span className="text-primary italic">next generation</span> <br />
-            of business AI.
+            Start your <br />
+            <span className="text-primary italic">AI-driven</span> <br />
+            journey today.
           </h1>
           <p className="text-text-subtle text-lg max-w-md font-medium">
-            Join thousands of teams using Talos to orchestrate multi-agent workflows and accelerate their development cycle.
+            Create an account to unlock the full potential of multi-agent orchestration and specialized business domains.
           </p>
         </div>
 
-        <div className="relative z-10 grid grid-cols-2 gap-8">
-          <div className="space-y-2">
-             <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary mb-3">
-                <ShieldCheck size={18} />
-             </div>
-             <h3 className="text-white font-semibold">Secure by Design</h3>
-             <p className="text-text-subtle text-xs leading-relaxed">Enterprise-grade encryption and isolated sandboxes for every task.</p>
-          </div>
-          <div className="space-y-2">
-             <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary mb-3">
-                <Zap size={18} />
-             </div>
-             <h3 className="text-white font-semibold">Lightning Fast</h3>
-             <p className="text-text-subtle text-xs leading-relaxed">Optimized runtime for low-latency responses and high throughput.</p>
-          </div>
+        <div className="relative z-10 space-y-6">
+           <div className="flex items-center gap-4 text-white/80">
+              <CheckCircle2 size={20} className="text-primary" />
+              <span className="font-medium">Unlimited Chat History</span>
+           </div>
+           <div className="flex items-center gap-4 text-white/80">
+              <CheckCircle2 size={20} className="text-primary" />
+              <span className="font-medium">Advanced Coding Sandbox</span>
+           </div>
+           <div className="flex items-center gap-4 text-white/80">
+              <CheckCircle2 size={20} className="text-primary" />
+              <span className="font-medium">Multi-domain Agent Access</span>
+           </div>
         </div>
 
         <div className="absolute bottom-12 right-12 z-10">
@@ -95,9 +94,9 @@ export const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right side: Login Form */}
+      {/* Right side: Register Form */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 lg:px-20 py-12 relative">
-        {/* Subtle grid for the form side too */}
+        {/* Subtle grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
@@ -110,16 +109,9 @@ export const LoginPage = () => {
           </div>
 
           <div className="mb-10">
-            <h2 className="text-3xl font-bold text-text-strong mb-2">Sign in to Talos</h2>
-            <p className="text-text-subtle font-medium">Enter your credentials to access your workspace.</p>
+            <h2 className="text-3xl font-bold text-text-strong mb-2">Create an account</h2>
+            <p className="text-text-subtle font-medium">Join the Talos community today.</p>
           </div>
-
-          {successMessage && (
-            <div className="mb-6 rounded-xl bg-primary/10 border border-primary/20 p-4 text-sm text-primary font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-              <ShieldCheck size={18} />
-              {successMessage}
-            </div>
-          )}
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
@@ -134,10 +126,7 @@ export const LoginPage = () => {
                 {errors.email && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.email.message}</p>}
               </div>
               <div>
-                <div className="flex justify-between items-center mb-2 px-1">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle">Password</label>
-                  <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">Forgot?</a>
-                </div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Password</label>
                 <input
                   {...register('password')}
                   type="password"
@@ -145,6 +134,16 @@ export const LoginPage = () => {
                   placeholder="••••••••"
                 />
                 {errors.password && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.password.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Confirm Password</label>
+                <input
+                  {...register('confirmPassword')}
+                  type="password"
+                  className="block w-full rounded-2xl border border-muted bg-muted/30 px-4 py-3.5 text-text-strong transition-all focus:border-primary/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40"
+                  placeholder="••••••••"
+                />
+                {errors.confirmPassword && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
@@ -159,14 +158,14 @@ export const LoginPage = () => {
               disabled={isSubmitting}
               className="group relative flex w-full items-center justify-center gap-2 rounded-2xl bg-text-strong py-4 text-sm font-bold text-white shadow-xl shadow-text-strong/10 hover:bg-primary transition-all disabled:opacity-50 active:scale-[0.98]"
             >
-              <span>{isSubmitting ? 'Authenticating...' : 'Sign in to workspace'}</span>
+              <span>{isSubmitting ? 'Creating account...' : 'Create account'}</span>
               {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
           <div className="mt-12 pt-8 border-t border-muted">
              <p className="text-center text-sm text-text-subtle font-medium">
-               Don't have an account yet? <Link to="/register" className="text-primary font-bold hover:underline">Create an account</Link>
+               Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Sign in instead</Link>
              </p>
           </div>
         </div>

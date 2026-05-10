@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '@/pages/login-page/ui/LoginPage';
+import { RegisterPage } from '@/pages/register-page/ui/RegisterPage';
 import { useUserStore } from '@/entities/user/model/store';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { ChatWindow } from '@/features/chat/ui/ChatWindow';
@@ -39,9 +40,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export const App = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen bg-white text-text-strong font-sans">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/"
           element={
