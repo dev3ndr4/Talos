@@ -24,7 +24,7 @@ Centralize and standardize LLM integration to support Google AI Studio's Gemini 
 ```python
 class Settings(BaseSettings):
     # ... existing settings
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini/gemma-4-31b-it")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 ```
 

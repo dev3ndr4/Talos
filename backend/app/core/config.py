@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = "talos_db"
 
     # LLM Settings
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini/gemma-4-31b-it")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
     class Config:
