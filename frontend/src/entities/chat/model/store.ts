@@ -37,17 +37,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   fetchSessions: async () => {
     const { data } = await api.get('/chat/sessions');
     set({ sessions: data });
+    
+    // Try to restore session from localStorage
+    const savedSessionId = localStorage.getItem('talos_current_session_id');
+    if (savedSessionId && !get().currentSession) {
+      const savedSession = data.find((s: ChatSession) => s.id === savedSessionId);
+      if (savedSession) {
+        get().setCurrentSession(savedSession);
+      }
+    }
   },
 
   setCurrentSession: async (session) => {
     set({ currentSession: session, isLoading: true });
-    // In a real app we'd fetch messages for this session
-    // const { data } = await api.get(`/chat/sessions/${session.id}/messages`);
-    set({ messages: [], isLoading: false }); // Resetting for now, or fetch
+    localStorage.setItem('talos_current_session_id', session.id);
+    try {
+      const { data } = await api.get(`/chat/sessions/${session.id}/messages`);
+      set({ messages: data, isLoading: false });
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+      set({ messages: [], isLoading: false });
+    }
   },
 
   createSession: async (title) => {
     const { data } = await api.post('/chat/sessions', { title });
+    localStorage.setItem('talos_current_session_id', data.id);
     set((state) => ({ sessions: [data, ...state.sessions], currentSession: data, messages: [] }));
   },
 

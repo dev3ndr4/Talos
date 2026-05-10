@@ -21,14 +21,9 @@ async def list_sessions(
 ):
     return await service.get_chat_sessions(current_user["id"])
 
-@router.post("/sessions/{session_id}/messages", response_model=ConsolidatedMessageResponse)
-async def send_message(
+@router.get("/sessions/{session_id}/messages", response_model=List[MessageResponse])
+async def list_messages(
     session_id: str,
-    message_in: MessageCreate,
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
-    result = await service.process_message_consolidated(current_user["id"], session_id, message_in.content)
-    if not result:
-        raise HTTPException(status_code=404, detail="Session or user not found")
-    
-    return result
+    return await service.get_messages(session_id, limit=100)
