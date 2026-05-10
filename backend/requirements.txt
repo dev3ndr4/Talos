@@ -17,3 +17,8 @@ pytest-asyncio
 mongomock-motor
 beanie
 chromadb
+duckduckgo-search
+googlesearch-python
+requests
+beautifulsoup4
+wikipedia

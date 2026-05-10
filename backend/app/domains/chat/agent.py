@@ -8,7 +8,7 @@ from litellm.exceptions import RateLimitError
 from app.core.config import settings
 from app.core.tools.coding import ExecutePython
 from app.core.tools.comms import DraftEmail
-from app.core.tools.knowledge import GrepSearch, ListFiles, ReadFile, WebSearch
+from app.core.tools.knowledge import FetchURL, GrepSearch, ListFiles, ReadFile, WebSearch, WikipediaSearch
 from app.core.tools.registry import registry
 from app.core.tools.wiki import ListWikiPages, ReadWikiPage, WriteWikiPage
 
@@ -22,6 +22,8 @@ registry.register(ReadWikiPage)
 registry.register(ListWikiPages)
 registry.register(DraftEmail)
 registry.register(WebSearch)
+registry.register(FetchURL)
+registry.register(WikipediaSearch)
 
 logger = logging.getLogger("talos.agent")
 

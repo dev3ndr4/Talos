@@ -1,6 +1,11 @@
+import asyncio
 import os
 import subprocess
 
+import requests
+import wikipedia
+from bs4 import BeautifulSoup
+from googlesearch import search
 from pydantic import Field
 
 from app.core.tools.base import BaseTool
@@ -78,25 +83,87 @@ class GrepSearch(BaseTool):
 
 class WebSearch(BaseTool):
     """
-    Performs a web search to retrieve up-to-date information from the internet.
-    Use this when you need facts, news, or documentation not in your local memory.
+    Performs a native web search to retrieve relevant URLs.
+    Use this when you need to find information on the internet.
+    Follow up with FetchURL to read the content of a specific page.
     """
 
     query: str = Field(..., description="The search query to perform.")
 
-    async def run(self) -> str:
-        # In Phase 3, we use LiteLLM's completion with a search-capable model
-        # or a dedicated search provider like Tavily.
-        # For now, we provide a structured placeholder that can be easily
-        # upgraded by setting the appropriate environment variables.
-
-        tavily_key = os.getenv("TAVILY_API_KEY")
-        if not tavily_key:
-            return f"MOCK WEB SEARCH (TAVILY_API_KEY missing) for '{self.query}': Talos v2 is the next generation of autonomous business agents, featuring deep tool integration and self-correction loops."
-
+    def _sync_search(self):
         try:
-            # Placeholder for actual Tavily/Google call
-            # result = await search_provider.search(self.query)
-            return f"SUCCESS: Search results for '{self.query}' would appear here if integrated with a provider."
+            results = search(self.query, num_results=5)
+            urls = list(results)
+            if not urls:
+                return "No results found."
+            return "\n".join([f"- {url}" for url in urls])
         except Exception as e:
             return f"ERROR: Web search failed: {str(e)}"
+
+    async def run(self) -> str:
+        return await asyncio.to_thread(self._sync_search)
+
+
+class FetchURL(BaseTool):
+    """
+    Fetches the content of a web page and returns a summarized text version.
+    Use this to read the details of a URL found via WebSearch.
+    """
+
+    url: str = Field(..., description="The full URL to fetch (must start with http/https).")
+
+    def _sync_fetch(self):
+        try:
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+            response = requests.get(self.url, headers=headers, timeout=15)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            # Remove script and style elements
+            for script in soup(["script", "style"]):
+                script.decompose()
+
+            # Get text
+            text = soup.get_text()
+
+            # Break into lines and remove leading/trailing whitespace
+            lines = (line.strip() for line in text.splitlines())
+            # Break multi-headlines into a line each
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            # Drop blank lines
+            text = "\n".join(chunk for chunk in chunks if chunk)
+
+            return text[:4000]  # Limit to first 4000 characters
+        except Exception as e:
+            return f"ERROR: Failed to fetch URL: {str(e)}"
+
+    async def run(self) -> str:
+        return await asyncio.to_thread(self._sync_fetch)
+
+
+class WikipediaSearch(BaseTool):
+    """
+    Searches Wikipedia for a given topic and returns a summary.
+    Use this for high-reliability general knowledge discovery.
+    """
+
+    query: str = Field(..., description="The topic to search for on Wikipedia.")
+
+    def _sync_search(self):
+        try:
+            # First find pages
+            search_results = wikipedia.search(self.query, results=3)
+            if not search_results:
+                return "No Wikipedia pages found for this topic."
+
+            # Get summary of the first result
+            summary = wikipedia.summary(search_results[0], sentences=5)
+            return f"SOURCE: Wikipedia (Page: {search_results[0]})\n\n{summary}"
+        except wikipedia.exceptions.DisambiguationError as e:
+            return f"ERROR: The search term '{self.query}' is too broad. Options: {', '.join(e.options[:5])}"
+        except Exception as e:
+            return f"ERROR: Wikipedia search failed: {str(e)}"
+
+    async def run(self) -> str:
+        return await asyncio.to_thread(self._sync_search)
