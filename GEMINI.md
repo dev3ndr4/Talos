@@ -29,7 +29,7 @@ This document takes precedence over all other architectural guidance and serves 
 ## Technology Stack
 
 - **Runtime:** Docker / Docker Compose
-- **Backend:** Python 3.12+, FastAPI, LiteLLM, Motor (MongoDB driver), Pydantic.
+- **Backend:** Python 3.12+, FastAPI, Google Gen AI SDK, Motor (MongoDB driver), Pydantic.
 - **Frontend:** React, TypeScript, Vite, Custom CSS (Semantic & Centralized), Radix UI (shadcn), Lucide icons.
 - **Data:** MongoDB.
 

@@ -1,9 +1,11 @@
+import asyncio
 import json
 import logging
 import os
+import random
 
-import litellm
-from litellm.exceptions import RateLimitError
+from google import genai
+from google.genai import types
 
 from app.core.config import settings
 from app.core.tools.coding import ExecutePython
@@ -44,20 +46,20 @@ class ChatAgent:
     """
     Unified Chat Agent responsible for managing conversation flow,
     summarization, and user profile memory with autonomous tool-calling support.
+    Using official Google Gen AI SDK for stability.
     """
 
     def __init__(self):
         self.name = "Talos Chat Architect"
-        self.model = settings.LLM_MODEL
-        self.api_key = settings.GEMINI_API_KEY
+        # The SDK expects the model name without the provider prefix
+        self.model = settings.LLM_MODEL.split("/")[-1]
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
         self.max_steps = 5
         self.instructions_path = "app/core/instructions"
 
     def _load_instruction(self, agent_type: str) -> str:
         """Loads agent-specific instructions from Markdown files."""
         try:
-            # We are running from the backend directory usually, but check current working dir
-            # For robustness, we can use absolute paths or relative to this file
             base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
             file_path = os.path.join(base_path, "core", "instructions", f"{agent_type}.md")
             with open(file_path) as f:
@@ -110,12 +112,21 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
 }}
 """
 
-        messages = [{"role": "system", "content": system_prompt}]
+        # Convert history and current message to Google Gen AI format
+        contents = []
         for msg in history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-        messages.append({"role": "user", "content": current_message})
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part(text=msg["content"])]))
 
-        tools = registry.get_all_schemas()
+        contents.append(types.Content(role="user", parts=[types.Part(text=current_message)]))
+
+        # Prepare tools in native format
+        # The SDK can take functions directly, but we have a custom registry.
+        # We'll use manual tool calling loop to maintain the existing logic and control.
+        native_tools = [
+            types.Tool(function_declarations=[types.FunctionDeclaration(name=schema["function"]["name"], description=schema["function"]["description"], parameters=schema["function"]["parameters"]) for schema in registry.get_all_schemas()])
+        ]
+
         reasoning_log = []
         captured_email_draft = None
 
@@ -123,21 +134,37 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
             for step in range(self.max_steps):
                 logger.info(f"Agent Step {step + 1}/{self.max_steps}")
 
-                response = await litellm.acompletion(
-                    model=self.model,
-                    messages=messages,
-                    api_key=self.api_key,
-                    tools=tools,
-                    tool_choice="auto",
-                    response_format={"type": "json_object"} if step == self.max_steps - 1 else None,
-                )
+                # Retry logic for flaky models (e.g., Gemma 4)
+                response = None
+                max_retries = 5
+                for attempt in range(max_retries):
+                    try:
+                        # Use system_instruction parameter for the system prompt
+                        config = types.GenerateContentConfig(
+                            system_instruction=system_prompt,
+                            tools=native_tools,
+                            response_mime_type="application/json" if step == self.max_steps - 1 else None,
+                            # Disable automatic calling to maintain our reasoning log and tool execution logic
+                            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+                        )
 
-                response_message = response.choices[0].message
-                tool_calls = getattr(response_message, "tool_calls", None)
+                        response = self.client.models.generate_content(model=self.model, contents=contents, config=config)
+                        break
+                    except Exception as e:
+                        if attempt == max_retries - 1:
+                            raise e
+
+                        # Exponential backoff with jitter
+                        wait_time = (2**attempt) + (random.uniform(0, 1))
+                        logger.warning(f"LLM call failed (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time:.2f}s...")
+                        await asyncio.sleep(wait_time)
+
+                candidate = response.candidates[0]
+                tool_calls = [part.function_call for part in candidate.content.parts if part.function_call]
 
                 if not tool_calls:
                     # Final response reached or no tool calls
-                    raw_content = response_message.content
+                    raw_content = "".join([part.text for part in candidate.content.parts if part.text])
                     try:
                         final_data = json.loads(raw_content)
                         # Append the gathered reasoning log
@@ -161,10 +188,13 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
                         }
 
                 # Handle tool calls
-                messages.append(response_message)
+                # Add model's response to contents
+                contents.append(candidate.content)
+
+                tool_response_parts = []
                 for tool_call in tool_calls:
-                    function_name = tool_call.function.name
-                    function_args = json.loads(tool_call.function.arguments)
+                    function_name = tool_call.name
+                    function_args = tool_call.args
 
                     logger.info(f"Executing tool: {function_name}")
                     reasoning_log.append(f"- **Tool Call**: {function_name}({json.dumps(function_args)})")
@@ -177,14 +207,10 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
 
                     reasoning_log.append(f"  - **Result**: {str(result.output)[:200]}...")
 
-                    messages.append(
-                        {
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": function_name,
-                            "content": json.dumps(result.output),
-                        }
-                    )
+                    tool_response_parts.append(types.Part(function_response=types.FunctionResponse(name=function_name, response=result.output)))
+
+                # Add tool results to contents
+                contents.append(types.Content(role="tool", parts=tool_response_parts))
 
             # If we hit max steps without a final response
             return {
@@ -194,8 +220,6 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
                 "user_profile_update": user_summary,
             }
 
-        except RateLimitError as e:
-            raise AgentRateLimitError(str(e)) from e
         except Exception as e:
             logger.error(f"Agent Error: {str(e)}", exc_info=True)
             raise AgentGeneralError(str(e)) from e

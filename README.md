@@ -18,7 +18,7 @@ Talos uses a modular, scalable architecture to ensure security and maintainabili
 - **Backend:** FastAPI using **Domain-Driven Design (Feature-Based)**.
 - **Database:** MongoDB for unstructured data and agent memory.
 - **Sandbox:** Isolated Docker sidecar for safe code execution.
-- **LLM Gateway:** LiteLLM for easy switching between models (Gemini, GPT-4, etc.).
+- **LLM Gateway:** Google Gen AI SDK (Native integration for Gemini/Gemma).
 
 ## Repository Structure
 

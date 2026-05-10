@@ -1,8 +1,11 @@
+import asyncio
 import json
 import logging
 import os
+import random
 
-import litellm
+from google import genai
+from google.genai import types
 
 from app.core.config import settings
 from app.core.tools.wiki import ListWikiPages, ReadWikiPage, WriteWikiPage
@@ -14,15 +17,38 @@ class KnowledgeCompiler:
     """
     The Synthesis Engine for the Talos Knowledge Brain.
     Responsible for merging new information into the existing wiki.
+    Using official Google Gen AI SDK for stability.
     """
 
     def __init__(self):
-        self.model = settings.LLM_MODEL
-        self.api_key = settings.GEMINI_API_KEY
+        # The SDK expects the model name without the provider prefix
+        self.model = settings.LLM_MODEL.split("/")[-1]
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
         self.wiki_dir = "knowledge/wiki"
 
         if not os.path.exists(self.wiki_dir):
             os.makedirs(self.wiki_dir)
+
+    async def _call_llm(self, prompt: str, json_mode: bool = False):
+        """Helper to call LLM with retry logic."""
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                config = types.GenerateContentConfig(
+                    system_instruction=prompt,
+                    response_mime_type="application/json" if json_mode else None,
+                )
+                # For compiler, we usually don't have a history, just a single prompt.
+                # The compiler currently uses system prompt as the main prompt.
+                # We'll stick to that but use models.generate_content.
+                response = self.client.models.generate_content(model=self.model, contents="Please process the information as instructed.", config=config)
+                return response.text
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                wait_time = (2**attempt) + (random.uniform(0, 1))
+                logger.warning(f"KnowledgeCompiler LLM call failed (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time:.2f}s...")
+                await asyncio.sleep(wait_time)
 
     async def compile_information(self, raw_content: str, source_name: str):
         """
@@ -63,9 +89,8 @@ Return a JSON object:
 }}
 """
 
-        response = await litellm.acompletion(model=self.model, messages=[{"role": "system", "content": prompt}], api_key=self.api_key, response_format={"type": "json_object"})
-
-        plan = json.loads(response.choices[0].message.content)
+        content = await self._call_llm(prompt, json_mode=True)
+        plan = json.loads(content)
 
         results = []
         for action in plan.get("actions", []):
@@ -104,14 +129,9 @@ NEW INFORMATION TO INTEGRATE:
 Return the COMPLETE updated Markdown content (including YAML frontmatter).
 """
 
-        response = await litellm.acompletion(model=self.model, messages=[{"role": "system", "content": merge_prompt}], api_key=self.api_key)
-
-        updated_content = response.choices[0].message.content
+        updated_content = await self._call_llm(merge_prompt, json_mode=False)
 
         # Write back (need to handle YAML extraction if writer expects it separate)
-        # For simplicity, we can just write the whole thing as content if writer supports it
-        # But WriteWikiPage adds its own frontmatter. Let's adjust writer or here.
-
         file_path = os.path.join(self.wiki_dir, f"{title.replace(' ', '-')}.md")
         with open(file_path, "w") as f:
             f.write(updated_content)
