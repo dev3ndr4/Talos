@@ -13,11 +13,11 @@ export const Sidebar = () => {
   }, [fetchSessions]);
 
   return (
-    <div className="flex h-full w-72 flex-col bg-bg-soft border-r border-muted/50">
+    <div className="flex h-full w-72 flex-col bg-bg-soft border-r border-muted-subtle">
       <div className="p-4">
         <button
           onClick={() => createSession(`New Chat ${sessions.length + 1}`)}
-          className="flex w-full items-center justify-between gap-2 rounded-xl bg-surface border border-muted/50 px-4 py-3 text-sm font-medium text-text-strong shadow-sm hover:bg-muted/50 transition-all group"
+          className="flex w-full items-center justify-between gap-2 rounded-lg bg-surface border border-muted-subtle px-4 py-2.5 text-sm font-medium text-text-strong shadow-sm hover:bg-muted transition-all group"
         >
           <div className="flex items-center gap-2">
             <Plus size={18} strokeWidth={1.5} className="text-primary" />
@@ -36,9 +36,9 @@ export const Sidebar = () => {
             key={session.id}
             onClick={() => setCurrentSession(session)}
             className={clsx(
-              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all relative group",
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all relative group",
               currentSession?.id === session.id
-                ? "bg-surface text-text-strong shadow-sm ring-1 ring-muted"
+                ? "bg-surface text-text-strong shadow-sm ring-1 ring-muted-subtle"
                 : "text-text-subtle hover:bg-surface/50 hover:text-text-strong"
             )}
           >
@@ -55,10 +55,10 @@ export const Sidebar = () => {
       </div>
 
       <div className="mt-auto p-4 space-y-4">
-        <div className="rounded-2xl bg-surface/50 border border-muted/50 p-3 shadow-sm">
+        <div className="rounded-lg bg-surface/50 border border-muted-subtle p-3 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/20">
-              <UserIcon size={18} strokeWidth={1.5} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white shadow-sm">
+              <UserIcon size={16} strokeWidth={1.5} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-text-strong truncate">{user?.email?.split('@')[0]}</p>
@@ -69,7 +69,7 @@ export const Sidebar = () => {
         
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-text-subtle hover:bg-error/10 hover:text-error transition-all"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-subtle hover:bg-error/10 hover:text-error transition-all"
         >
           <LogOut size={14} strokeWidth={1.5} />
           Sign out

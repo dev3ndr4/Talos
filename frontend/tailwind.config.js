@@ -17,14 +17,13 @@ export default {
           base: "rgb(var(--bg-base) / <alpha-value>)",
           soft: "rgb(var(--bg-soft) / <alpha-value>)",
         },
-        muted: "rgb(var(--muted) / <alpha-value>)",
+        muted: {
+          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
+          subtle: "rgb(var(--muted-subtle) / <alpha-value>)",
+        },
         "text-strong": "rgb(var(--text-strong) / <alpha-value>)",
         "text-subtle": "rgb(var(--text-subtle) / <alpha-value>)",
         error: "rgb(var(--error) / <alpha-value>)",
-      },
-      borderRadius: {
-        'xl': '0.75rem',
-        '2xl': '1rem',
       }
     },
   },

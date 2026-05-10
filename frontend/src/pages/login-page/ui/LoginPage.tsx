@@ -42,7 +42,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white overflow-hidden">
+    <div className="flex min-h-screen bg-surface overflow-hidden">
       {/* Left side: Branding & Visuals */}
       <div className="hidden lg:flex lg:w-1/2 bg-text-strong relative p-12 flex-col justify-between overflow-hidden">
         {/* Abstract background pattern */}
@@ -102,7 +102,7 @@ export const LoginPage = () => {
 
         <div className="w-full max-w-sm relative">
           <div className="mb-10 lg:hidden">
-            <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-white mb-4">
+            <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4">
               <LayoutGrid size={24} strokeWidth={2.5} />
             </div>
           </div>
@@ -126,7 +126,7 @@ export const LoginPage = () => {
                 <input
                   {...register('email')}
                   type="email"
-                  className="block w-full rounded-2xl border border-muted bg-muted/30 px-4 py-3.5 text-text-strong transition-all focus:border-primary/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40"
+                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
                   placeholder="name@company.com"
                 />
                 {errors.email && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.email.message}</p>}
@@ -139,7 +139,7 @@ export const LoginPage = () => {
                 <input
                   {...register('password')}
                   type="password"
-                  className="block w-full rounded-2xl border border-muted bg-muted/30 px-4 py-3.5 text-text-strong transition-all focus:border-primary/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40"
+                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
                   placeholder="••••••••"
                 />
                 {errors.password && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.password.message}</p>}
@@ -155,7 +155,7 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-2xl bg-text-strong py-4 text-sm font-bold text-white shadow-xl shadow-text-strong/10 hover:bg-primary transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-text-strong py-3 text-sm font-bold text-white shadow-md hover:bg-primary transition-all disabled:opacity-50 active:scale-[0.98]"
             >
               <span>{isSubmitting ? 'Authenticating...' : 'Sign in to workspace'}</span>
               {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}

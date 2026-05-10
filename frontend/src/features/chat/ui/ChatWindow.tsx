@@ -25,7 +25,7 @@ export const ChatWindow = () => {
   if (!currentSession) {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center px-4">
-        <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6 animate-pulse">
+        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6">
           <Bot size={32} strokeWidth={1.5} />
         </div>
         <h2 className="text-xl font-semibold text-text-strong mb-2">Welcome to Talos</h2>
@@ -53,10 +53,9 @@ export const ChatWindow = () => {
         </div>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-surface via-surface/90 to-transparent pb-8 pt-12 px-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-surface/80 backdrop-blur-md border-t border-muted/50 pb-6 pt-4 px-4">
         <div className="max-w-3xl mx-auto relative group">
-          <div className="absolute -inset-0.5 bg-primary/20 rounded-[22px] blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
-          <div className="relative flex items-end gap-2 bg-surface border border-muted-subtle shadow-xl shadow-primary/5 rounded-[20px] p-2 transition-all border-muted group-focus-within:border-primary/50">
+          <div className="relative flex items-end gap-2 bg-surface border border-muted shadow-sm rounded-xl p-2 transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -74,7 +73,7 @@ export const ChatWindow = () => {
             <button
               onClick={handleSend}
               disabled={!input.trim()}
-              className="bg-text-strong text-white p-2.5 rounded-xl hover:bg-primary transition-all disabled:opacity-20 disabled:hover:bg-text-strong mb-0.5 mr-0.5"
+              className="bg-text-strong text-white p-2.5 rounded-lg hover:bg-primary transition-all disabled:opacity-20 disabled:hover:bg-text-strong mb-0.5 mr-0.5"
             >
               <Send size={18} strokeWidth={2} />
             </button>
@@ -106,7 +105,7 @@ const MessageItem = ({ message }: { message: Message }) => {
       <div className={clsx("flex flex-col gap-2 min-w-0 flex-1", !isAssistant && "items-end")}>
         <div className={clsx(
           "text-sm leading-relaxed",
-          isAssistant ? "text-text-strong pr-10" : "bg-muted/50 rounded-2xl px-4 py-2 text-text-strong inline-block"
+          isAssistant ? "text-text-strong pr-10" : "bg-muted/50 border border-muted/50 rounded-xl px-5 py-3 text-text-strong inline-block shadow-sm"
         )}>
           <ReactMarkdown 
             remarkPlugins={[remarkGfm]}

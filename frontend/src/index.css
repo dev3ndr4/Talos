@@ -10,20 +10,21 @@
 
   /* Backgrounds */
   --surface: 0 0% 100%;         /* #FFFFFF */
-  --bg-soft: 166 54% 91%;      /* #D9F5EE */
-  --bg-base: 165 14% 97%;      /* #F4F8F7 */
-  --muted: 165 14% 95%;        /* Derived muted */
+  --bg-soft: 240 5% 96%;        /* #F4F4F5 (Zinc 100) */
+  --bg-base: 0 0% 100%;         /* #FFFFFF (Clean white base) */
+  --muted: 240 5% 96%;          /* #F4F4F5 (Zinc 100) */
+  --muted-subtle: 240 5% 84%;   /* #D4D4D8 (Zinc 300) */
 
   /* Text */
-  --text-strong: 199 20% 18%;  /* #253238 */
-  --text-subtle: 199 15% 40%;  /* Derived subtle */
+  --text-strong: 240 10% 4%;    /* #09090B (Zinc 950) */
+  --text-subtle: 240 4% 46%;    /* #71717A (Zinc 500) */
   
   /* Status */
   --error: 0 84% 60%;          /* #EF4444 */
 
   /* Patterns */
-  --pattern-color: var(--primary);
-  --pattern-opacity: 0.1;
+  --pattern-color: 240 10% 4%;
+  --pattern-opacity: 0.03;
 }
 
 @layer base {
