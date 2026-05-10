@@ -172,11 +172,3 @@ export const LoginPage = () => {
     </div>
   );
 };
-to="/register" className="text-primary font-bold hover:underline">Create an account</Link>
-             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};

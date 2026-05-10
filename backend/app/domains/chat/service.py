@@ -1,5 +1,6 @@
+import json
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 from app.core.database import db
 from app.core.config import settings
 from app.domains.chat.schemas import ChatSessionCreate, MessageBase
@@ -53,95 +54,64 @@ async def get_messages(session_id: str, limit: int = 10):
         messages.append(doc)
     return messages[::-1] # Return in chronological order
 
-async def call_llm(user_summary: str, chat_summary: str, history: List[dict], current_message: str):
-    system_prompt = f"""You are Talos, a Unified Autonomous Business Architect.
-Your goal is to assist the user with Knowledge, Comms, and Coding tasks.
+from app.domains.chat.agent import ChatAgent
 
-USER PROFILE MEMORY:
-{user_summary}
+chat_agent = ChatAgent()
 
-CURRENT CONVERSATION MEMORY:
-{chat_summary}
-
-Follow the 'Glass Box' philosophy: explain your reasoning in a clear, transparent way.
-"""
-    
-    messages = [{"role": "system", "content": system_prompt}]
-    
-    # Add history (last N messages)
-    for msg in history:
-        messages.append({"role": msg["role"], "content": msg["content"]})
-    
-    # Add current user message
-    messages.append({"role": "user", "content": current_message})
-    
-    # Call LiteLLM
-    response = await litellm.acompletion(
-        model=settings.LLM_MODEL,
-        messages=messages,
-        api_key=settings.GEMINI_API_KEY
-    )
-    
-    content = response.choices[0].message.content
-    reasoning_trace = "Reasoning synthesized based on user profile and chat history."
-    
-    return content, reasoning_trace
-
-async def update_summaries(user_id: str, session_id: str):
-    # 1. Get user, session, and recent messages
+async def create_chat_session(user_id: str, session_in: ChatSessionCreate):
+...
+async def process_message_consolidated(user_id: str, session_id: str, content: str):
+    # 1. Get user and session
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
-    messages = await get_messages(session_id, limit=2) # Last user and assistant messages
     
-    if not user or not session or len(messages) < 2:
-        return
+    if not user or not session:
+        return None
 
-    history_str = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
-
-    # 2. Update Chat Summary
-    chat_prompt = f"""Update the following Chat Summary based on the latest interaction.
-Keep it concise but include key facts, decisions, or ongoing tasks.
-
-CURRENT CHAT SUMMARY:
-{session.get('chat_summary', '')}
-
-LATEST INTERACTION:
-{history_str}
-
-NEW CHAT SUMMARY:"""
+    # 2. Add user message
+    await add_message(session_id, "user", content)
     
-    chat_resp = await litellm.acompletion(
-        model=settings.LLM_MODEL,
-        messages=[{"role": "user", "content": chat_prompt}],
-        api_key=settings.GEMINI_API_KEY
+    # 3. Get context
+    history = await get_messages(session_id, limit=5)
+    
+    # 4. Call consolidated LLM via ChatAgent
+    llm_data = await chat_agent.process_message(
+        user.get("user_summary", ""),
+        session.get("chat_summary", ""),
+        history[:-1],
+        content
     )
-    new_chat_summary = chat_resp.choices[0].message.content
-
-    # 3. Update User Summary
-    user_prompt = f"""Update the following User Profile Memory based on the latest interaction.
-Only include long-term facts (preferences, name, role, global goals). Ignore session-specific noise.
-
-CURRENT USER PROFILE MEMORY:
-{user.get('user_summary', '')}
-
-LATEST INTERACTION:
-{history_str}
-
-NEW USER PROFILE MEMORY:"""
-
-    user_resp = await litellm.acompletion(
-        model=settings.LLM_MODEL,
-        messages=[{"role": "user", "content": user_prompt}],
-        api_key=settings.GEMINI_API_KEY
+    
+    # 5. Add assistant message
+    assistant_msg = await add_message(
+        session_id, 
+        "assistant", 
+        llm_data["assistant_message"], 
+        llm_data["reasoning_trace"]
     )
-    new_user_summary = user_resp.choices[0].message.content
-
-    # 4. Save to DB
+    
+    # 6. Update summaries in DB
     await db.chat_sessions.update_one(
         {"_id": ObjectId(session_id)},
-        {"$set": {"chat_summary": new_chat_summary}}
+        {"$set": {
+            "chat_summary": llm_data["chat_summary_update"],
+            "updated_at": datetime.utcnow()
+        }}
     )
     await db.users.update_one(
         {"_id": ObjectId(user_id)},
-        {"$set": {"user_summary": new_user_summary}}
+        {"$set": {"user_summary": llm_data["user_profile_update"]}}
     )
+    
+    # 7. Get fresh objects for response
+    updated_session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
+    updated_session["id"] = str(updated_session["_id"])
+    
+    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    updated_user["id"] = str(updated_user["_id"])
+    
+    return {
+        "message": assistant_msg,
+        "session": updated_session,
+        "user": updated_user
+    }

@@ -171,11 +171,3 @@ export const RegisterPage = () => {
     </div>
   );
 };
-Link to="/login" className="text-primary font-bold hover:underline">Sign in instead</Link>
-             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};

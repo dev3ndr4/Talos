@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+from app.domains.auth.schemas import UserResponse
 
 class MessageBase(BaseModel):
     role: str # "user" or "assistant"
@@ -29,3 +30,8 @@ class ChatSessionResponse(ChatSessionBase):
 
     class Config:
         from_attributes = True
+
+class ConsolidatedMessageResponse(BaseModel):
+    message: MessageResponse
+    session: ChatSessionResponse
+    user: UserResponse

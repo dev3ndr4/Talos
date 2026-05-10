@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/shared/api/base';
+import { useUserStore } from '@/entities/user/model/store';
 
 export interface Message {
   id: string;
@@ -65,8 +66,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const { data } = await api.post(`/chat/sessions/${currentSession.id}/messages`, { content });
-      set((state) => ({ 
-        messages: state.messages.map(m => m.id === tempUserMsg.id ? tempUserMsg : m).concat(data) 
+      
+      // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User }
+      const { message, session, user } = data;
+
+      // Update User Store
+      useUserStore.getState().setUser(user);
+
+      // Update Sessions List and Current Session
+      set((state) => ({
+        messages: state.messages.map(m => m.id === tempUserMsg.id ? tempUserMsg : m).concat(message),
+        currentSession: session,
+        sessions: state.sessions.map(s => s.id === session.id ? session : s)
       }));
     } catch (error) {
       console.error('Failed to send message:', error);
