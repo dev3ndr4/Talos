@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore, Message } from '@/entities/chat/model/store';
 import { Send, ChevronDown, ChevronUp, Bot, User } from 'lucide-react';
 import { clsx } from 'clsx';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const ChatWindow = () => {
   const { messages, sendMessage, currentSession } = useChatStore();
@@ -103,10 +105,55 @@ const MessageItem = ({ message }: { message: Message }) => {
       
       <div className={clsx("flex flex-col gap-2 min-w-0 flex-1", !isAssistant && "items-end")}>
         <div className={clsx(
-          "text-sm leading-relaxed whitespace-pre-wrap",
+          "text-sm leading-relaxed",
           isAssistant ? "text-text-strong pr-10" : "bg-muted/50 rounded-2xl px-4 py-2 text-text-strong inline-block"
         )}>
-          {message.content}
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+              h1: ({ children }) => <h1 className="text-xl font-bold mb-4 mt-6 first:mt-0">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-4 first:mt-0">{children}</h3>,
+              ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+              li: ({ children }) => <li className="mb-1">{children}</li>,
+              code: ({ className, children, ...props }) => {
+                const match = /language-(\w+)/.exec(className || '');
+                const isInline = !match;
+                return isInline ? (
+                  <code className="bg-muted/50 rounded px-1.5 py-0.5 font-mono text-[0.9em] border border-muted" {...props}>
+                    {children}
+                  </code>
+                ) : (
+                  <pre className="bg-muted/30 border border-muted/50 rounded-xl p-4 overflow-x-auto my-4 font-mono text-[13px] leading-relaxed">
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  </pre>
+                );
+              },
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-text-subtle">
+                  {children}
+                </blockquote>
+              ),
+              table: ({ children }) => (
+                <div className="overflow-x-auto my-4 border border-muted rounded-xl">
+                  <table className="w-full text-left border-collapse">{children}</table>
+                </div>
+              ),
+              th: ({ children }) => <th className="bg-muted/30 p-2 border-b border-muted font-bold text-[13px]">{children}</th>,
+              td: ({ children }) => <td className="p-2 border-b border-muted text-[13px]">{children}</td>,
+              a: ({ children, href }) => (
+                <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  {children}
+                </a>
+              )
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
         </div>
 
         {isAssistant && message.reasoning_trace && (
@@ -136,3 +183,4 @@ const MessageItem = ({ message }: { message: Message }) => {
     </div>
   );
 };
+
