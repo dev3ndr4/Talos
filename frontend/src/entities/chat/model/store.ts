@@ -39,11 +39,14 @@ interface ChatStore {
   messages: Message[];
   activeAgent: AgentType;
   isLoading: boolean;
+  isSending: boolean;
+  abortController: AbortController | null;
   fetchSessions: () => Promise<void>;
   fetchFolders: () => Promise<void>;
   setCurrentSession: (session: ChatSession) => Promise<void>;
   createSession: (title: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  terminateMessage: () => void;
   retryMessage: (messageId: string) => Promise<void>;
   setActiveAgent: (agent: AgentType) => void;
   // Folder methods
@@ -61,8 +64,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   activeAgent: 'simple',
   isLoading: false,
+  isSending: false,
+  abortController: null,
 
   setActiveAgent: (agent) => set({ activeAgent: agent }),
+
+  terminateMessage: () => {
+    const { abortController } = get();
+    if (abortController) {
+      abortController.abort();
+      set({ isSending: false, abortController: null });
+    }
+  },
 
   fetchSessions: async () => {
     const { data } = await api.get('/chat/sessions');
@@ -176,13 +189,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       content,
       created_at: new Date().toISOString(),
     };
-    set({ messages: [...messages, tempUserMsg] });
+
+    const controller = new AbortController();
+    set({ messages: [...messages, tempUserMsg], isSending: true, abortController: controller });
 
     try {
-      const { data } = await api.post(`/chat/sessions/${currentSession.id}/messages`, {
-        content,
-        agent_type: activeAgent,
-      });
+      const { data } = await api.post(
+        `/chat/sessions/${currentSession.id}/messages`,
+        {
+          content,
+          agent_type: activeAgent,
+        },
+        { signal: controller.signal }
+      );
 
       // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User, error?: string, detected_agent_type?: AgentType }
       const { message, session, user, error: _error, detected_agent_type } = data;
@@ -206,8 +225,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           .concat(message),
         currentSession: session,
         sessions: state.sessions.map((s) => (s.id === session.id ? session : s)),
+        isSending: false,
+        abortController: null,
       }));
-    } catch (_error) {
+    } catch (_error: any) {
+      if (_error.name === 'CanceledError' || _error.name === 'AbortError') {
+        console.log('Message sending aborted');
+        return; // Don't show error if manually aborted
+      }
+
       console.error('Failed to send message:', _error);
       // Add a client-side error message if the API call itself fails
       const errorMessage: Message = {
@@ -219,6 +245,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       };
       set((state) => ({
         messages: [...state.messages, errorMessage],
+        isSending: false,
+        abortController: null,
       }));
     }
   },

@@ -7,7 +7,8 @@ import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ChatWindow = () => {
-  const { messages, sendMessage, currentSession, activeAgent } = useChatStore();
+  const { messages, sendMessage, terminateMessage, isSending, currentSession, activeAgent } =
+    useChatStore();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +19,7 @@ export const ChatWindow = () => {
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isSending) return;
     sendMessage(input);
     setInput('');
   };
@@ -76,15 +77,35 @@ export const ChatWindow = () => {
                   handleSend();
                 }
               }}
-              placeholder={`Message ${
-                activeAgent.charAt(0).toUpperCase() + activeAgent.slice(1)
-              } Agent...`}
+              disabled={isSending}
+              placeholder={
+                isSending
+                  ? 'Generating response...'
+                  : `Message ${activeAgent.charAt(0).toUpperCase() + activeAgent.slice(1)} Agent...`
+              }
               rows={1}
               className="chat-textarea"
             />
-            <button onClick={handleSend} disabled={!input.trim()} className="send-btn">
-              <Send size={18} strokeWidth={2.5} />
-            </button>
+            {isSending ? (
+              <button
+                onClick={terminateMessage}
+                className="send-btn"
+                style={{ background: 'var(--color-error)' }}
+              >
+                <div
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    background: 'white',
+                    borderRadius: '2px',
+                  }}
+                />
+              </button>
+            ) : (
+              <button onClick={handleSend} disabled={!input.trim()} className="send-btn">
+                <Send size={18} strokeWidth={2.5} />
+              </button>
+            )}
           </div>
           <p className="chat-disclaimer">Talos can make mistakes. Check important info.</p>
         </div>

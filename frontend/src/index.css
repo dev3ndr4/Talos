@@ -1066,7 +1066,26 @@ body {
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+  box-shadow: 0 0 0 4px rgba(16, 163, 127, 0.08);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 0.5;
+}
+
+/* Global input focus resets */
+input:focus,
+textarea:focus,
+button:focus {
+  outline: none !important;
+}
+
+.chat-input-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 10px 25px -5px rgba(16, 163, 127, 0.1),
+    0 0 0 4px rgba(16, 163, 127, 0.05);
 }
 
 .form-error {

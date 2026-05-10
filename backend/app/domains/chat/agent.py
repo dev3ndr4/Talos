@@ -208,7 +208,14 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
 
                     reasoning_log.append(f"  - **Result**: {str(result.output)[:200]}...")
 
-                    tool_response_parts.append(types.Part(function_response=types.FunctionResponse(name=function_name, response=result.output)))
+                    # Ensure result.output is a dictionary for the GenAI SDK
+                    response_dict = result.output
+                    if not result.success:
+                        response_dict = {"error": result.error}
+                    elif not isinstance(response_dict, dict):
+                        response_dict = {"result": response_dict}
+
+                    tool_response_parts.append(types.Part(function_response=types.FunctionResponse(name=function_name, response=response_dict)))
 
                 # Add tool results to contents
                 contents.append(types.Content(role="tool", parts=tool_response_parts))
