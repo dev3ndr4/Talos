@@ -4,9 +4,42 @@ from fastapi import APIRouter, Depends
 
 from app.domains.auth.router import get_current_user
 from app.domains.chat import service
-from app.domains.chat.schemas import ChatSessionCreate, ChatSessionResponse, MessageResponse
+from app.domains.chat.schemas import (
+    ChatFolderCreate,
+    ChatFolderResponse,
+    ChatFolderUpdate,
+    ChatSessionCreate,
+    ChatSessionResponse,
+    MessageResponse,
+)
 
 router = APIRouter()
+
+
+@router.post("/folders", response_model=ChatFolderResponse)
+async def create_folder(folder_in: ChatFolderCreate, current_user: Annotated[dict, Depends(get_current_user)]):
+    return await service.create_chat_folder(current_user["id"], folder_in)
+
+
+@router.get("/folders", response_model=list[ChatFolderResponse])
+async def list_folders(current_user: Annotated[dict, Depends(get_current_user)]):
+    return await service.get_chat_folders(current_user["id"])
+
+
+@router.patch("/folders/{folder_id}", response_model=ChatFolderResponse)
+async def update_folder(folder_id: str, folder_in: ChatFolderUpdate, current_user: Annotated[dict, Depends(get_current_user)]):
+    return await service.update_chat_folder(current_user["id"], folder_id, folder_in)
+
+
+@router.delete("/folders/{folder_id}")
+async def delete_folder(folder_id: str, current_user: Annotated[dict, Depends(get_current_user)]):
+    return await service.delete_chat_folder(current_user["id"], folder_id)
+
+
+@router.post("/sessions/{session_id}/move")
+async def move_session(session_id: str, payload: dict, current_user: Annotated[dict, Depends(get_current_user)]):
+    folder_id = payload.get("folder_id")
+    return await service.move_session_to_folder(current_user["id"], session_id, folder_id)
 
 
 @router.post("/sessions", response_model=ChatSessionResponse)

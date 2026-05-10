@@ -1,11 +1,13 @@
 import React from 'react';
 import { useChatStore, AgentType } from '@/entities/chat/model/store';
+import { useUIStore } from '@/shared/model/ui-store';
 import { Code, Library, MessageCircle, Share2, PanelLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
 export const Header = () => {
   const { activeAgent, setActiveAgent, currentSession } = useChatStore();
+  const { toggleSidebar } = useUIStore();
 
   const agents: { type: AgentType; icon: React.ReactNode; label: string }[] = [
     { type: 'coding', icon: <Code size={14} strokeWidth={2} />, label: 'Coding' },
@@ -16,7 +18,7 @@ export const Header = () => {
   return (
     <header className="global-header">
       <div className="flex items-center gap-4">
-        <button className="btn btn-ghost p-2 lg:hidden">
+        <button onClick={toggleSidebar} className="btn btn-ghost p-2">
           <PanelLeft size={20} strokeWidth={1.5} />
         </button>
         <div className="flex flex-col">

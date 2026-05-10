@@ -44,3 +44,29 @@ class ConsolidatedMessageResponse(BaseModel):
     session: ChatSessionResponse
     user: UserResponse
     error: str | None = None
+
+
+class ChatFolderBase(BaseModel):
+    name: str
+    is_expanded: bool = True
+    session_ids: list[str] = []
+
+
+class ChatFolderCreate(ChatFolderBase):
+    pass
+
+
+class ChatFolderUpdate(BaseModel):
+    name: str | None = None
+    is_expanded: bool | None = None
+    session_ids: list[str] | None = None
+
+
+class ChatFolderResponse(ChatFolderBase):
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

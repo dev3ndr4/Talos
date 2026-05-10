@@ -23,24 +23,40 @@ export interface ChatSession {
   updated_at: string;
 }
 
+export interface ChatFolder {
+  id: string;
+  name: string;
+  session_ids: string[];
+  is_expanded: boolean;
+}
+
 export type AgentType = 'knowledge' | 'comms' | 'coding';
 
 interface ChatStore {
   sessions: ChatSession[];
+  folders: ChatFolder[];
   currentSession: ChatSession | null;
   messages: Message[];
   activeAgent: AgentType;
   isLoading: boolean;
   fetchSessions: () => Promise<void>;
+  fetchFolders: () => Promise<void>;
   setCurrentSession: (session: ChatSession) => Promise<void>;
   createSession: (title: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   retryMessage: (messageId: string) => Promise<void>;
   setActiveAgent: (agent: AgentType) => void;
+  // Folder methods
+  createFolder: (name: string) => Promise<void>;
+  deleteFolder: (folderId: string) => Promise<void>;
+  updateFolder: (folderId: string, updates: Partial<ChatFolder>) => Promise<void>;
+  toggleFolderExpanded: (folderId: string) => Promise<void>;
+  moveChatToFolder: (sessionId: string, folderId: string | null) => Promise<void>;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
+  folders: [],
   currentSession: null,
   messages: [],
   activeAgent: 'coding',
@@ -52,6 +68,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const { data } = await api.get('/chat/sessions');
     set({ sessions: data });
 
+    // Fetch folders as well
+    get().fetchFolders();
+
     // Try to restore session from localStorage
     const savedSessionId = localStorage.getItem('talos_current_session_id');
     if (savedSessionId && !get().currentSession) {
@@ -60,6 +79,58 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         get().setCurrentSession(savedSession);
       }
     }
+  },
+
+  fetchFolders: async () => {
+    const { data } = await api.get('/chat/folders');
+    set({ folders: data });
+  },
+
+  // Folder methods implementation
+  createFolder: async (name) => {
+    const { data } = await api.post('/chat/folders', { name });
+    set((state) => ({ folders: [...state.folders, data] }));
+  },
+
+  deleteFolder: async (folderId) => {
+    await api.delete(`/chat/folders/${folderId}`);
+    set((state) => ({ folders: state.folders.filter((f) => f.id !== folderId) }));
+  },
+
+  updateFolder: async (folderId, updates) => {
+    const { data } = await api.patch(`/chat/folders/${folderId}`, updates);
+    set((state) => ({
+      folders: state.folders.map((f) => (f.id === folderId ? data : f)),
+    }));
+  },
+
+  toggleFolderExpanded: async (folderId) => {
+    const folder = get().folders.find((f) => f.id === folderId);
+    if (!folder) return;
+
+    const newExpanded = !folder.is_expanded;
+    // Optimistic update
+    set((state) => ({
+      folders: state.folders.map((f) =>
+        f.id === folderId ? { ...f, is_expanded: newExpanded } : f
+      ),
+    }));
+
+    try {
+      await api.patch(`/chat/folders/${folderId}`, { is_expanded: newExpanded });
+    } catch (error) {
+      // Revert on error
+      set((state) => ({
+        folders: state.folders.map((f) =>
+          f.id === folderId ? { ...f, is_expanded: !newExpanded } : f
+        ),
+      }));
+    }
+  },
+
+  moveChatToFolder: async (sessionId, folderId) => {
+    const { data } = await api.post(`/chat/sessions/${sessionId}/move`, { folder_id: folderId });
+    set({ folders: data });
   },
 
   setCurrentSession: async (session) => {

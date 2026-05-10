@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '@/pages/login-page/ui/LoginPage';
 import { RegisterPage } from '@/pages/register-page/ui/RegisterPage';
 import { useUserStore } from '@/entities/user/model/store';
+import { useUIStore } from '@/shared/model/ui-store';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { Header } from '@/widgets/header/ui/Header';
 import { ChatWindow } from '@/features/chat/ui/ChatWindow';
@@ -19,8 +20,21 @@ const BackgroundAnimation = () => {
 };
 
 const Dashboard = () => {
+  const { sidebarOpen, toggleSidebar } = useUIStore();
+
   return (
     <div className="app-container">
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={toggleSidebar}
+            className="mobile-backdrop lg:hidden"
+          />
+        )}
+      </AnimatePresence>
       <Sidebar />
       <div className="main-wrapper">
         <Header />

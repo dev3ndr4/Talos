@@ -4,10 +4,76 @@ from bson import ObjectId
 
 from app.domains.auth.models import User
 from app.domains.chat.agent import AgentRateLimitError, ChatAgent
-from app.domains.chat.models import ChatSession, Message
-from app.domains.chat.schemas import ChatSessionCreate
+from app.domains.chat.models import ChatFolder, ChatSession, Message
+from app.domains.chat.schemas import ChatFolderCreate, ChatFolderUpdate, ChatSessionCreate
 
 chat_agent = ChatAgent()
+
+
+async def create_chat_folder(user_id: str, folder_in: ChatFolderCreate):
+    folder = ChatFolder(
+        user_id=user_id,
+        name=folder_in.name,
+        is_expanded=folder_in.is_expanded,
+        session_ids=folder_in.session_ids,
+    )
+    await folder.insert()
+    folder_dict = folder.model_dump()
+    folder_dict["id"] = str(folder.id)
+    return folder_dict
+
+
+async def get_chat_folders(user_id: str):
+    folders = await ChatFolder.find(ChatFolder.user_id == user_id).sort(-ChatFolder.updated_at).to_list()
+    result = []
+    for f in folders:
+        f_dict = f.model_dump()
+        f_dict["id"] = str(f.id)
+        result.append(f_dict)
+    return result
+
+
+async def update_chat_folder(user_id: str, folder_id: str, folder_in: ChatFolderUpdate):
+    folder = await ChatFolder.find_one(ChatFolder.id == ObjectId(folder_id), ChatFolder.user_id == user_id)
+    if not folder:
+        return None
+
+    update_data = folder_in.model_dump(exclude_unset=True)
+    update_data["updated_at"] = datetime.utcnow()
+
+    await folder.update({"$set": update_data})
+
+    updated_folder = await ChatFolder.find_one(ChatFolder.id == ObjectId(folder_id))
+    folder_dict = updated_folder.model_dump()
+    folder_dict["id"] = str(updated_folder.id)
+    return folder_dict
+
+
+async def delete_chat_folder(user_id: str, folder_id: str):
+    folder = await ChatFolder.find_one(ChatFolder.id == ObjectId(folder_id), ChatFolder.user_id == user_id)
+    if not folder:
+        return False
+
+    await folder.delete()
+    return True
+
+
+async def move_session_to_folder(user_id: str, session_id: str, folder_id: str | None):
+    # Remove session from any existing folders
+    existing_folders = await ChatFolder.find(ChatFolder.user_id == user_id, ChatFolder.session_ids == session_id).to_list()
+    for f in existing_folders:
+        new_ids = [sid for sid in f.session_ids if sid != session_id]
+        await f.update({"$set": {"session_ids": new_ids, "updated_at": datetime.utcnow()}})
+
+    # Add to new folder if provided
+    if folder_id:
+        folder = await ChatFolder.find_one(ChatFolder.id == ObjectId(folder_id), ChatFolder.user_id == user_id)
+        if folder:
+            if session_id not in folder.session_ids:
+                new_ids = folder.session_ids + [session_id]
+                await folder.update({"$set": {"session_ids": new_ids, "updated_at": datetime.utcnow()}})
+
+    return await get_chat_folders(user_id)
 
 
 async def create_chat_session(user_id: str, session_in: ChatSessionCreate):

@@ -33,3 +33,19 @@ class Message(Document):
             "session_id",
             [("created_at", 1)],
         ]
+
+
+class ChatFolder(Document):
+    user_id: str
+    name: str
+    session_ids: list[str] = []
+    is_expanded: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "chat_folders"
+        indexes = [
+            "user_id",
+            [("updated_at", -1)],
+        ]
