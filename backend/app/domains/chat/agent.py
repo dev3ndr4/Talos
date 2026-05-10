@@ -17,10 +17,23 @@ class ChatAgent:
         self.api_key = settings.GEMINI_API_KEY
 
     async def process_message(
-        self, user_summary: str, chat_summary: str, history: list[dict], current_message: str
+        self,
+        user_summary: str,
+        chat_summary: str,
+        history: list[dict],
+        current_message: str,
+        agent_type: str = "coding",
     ):
+        agent_prompts = {
+            "coding": "You are currently in CODING mode. Focus on software engineering, debugging, and architectural patterns.",
+            "knowledge": "You are currently in KNOWLEDGE mode. Focus on research, synthesis, and deep information retrieval.",
+            "comms": "You are currently in COMMS mode. Focus on professional communication, drafting emails/messages, and relationship management.",
+        }
+
+        agent_instruction = agent_prompts.get(agent_type, agent_prompts["coding"])
+
         system_prompt = f"""You are Talos, a Unified Autonomous Business Architect.
-Your goal is to assist the user with Knowledge, Comms, and Coding tasks.
+{agent_instruction}
 
 USER PROFILE MEMORY:
 {user_summary}
@@ -31,12 +44,11 @@ CURRENT CONVERSATION MEMORY:
 Follow the 'Glass Box' philosophy: explain your reasoning in a clear, transparent way.
 
 CRITICAL: You MUST return your response as a JSON object with the following structure:
-{{
-  "assistant_message": "Your actual response to the user here",
+{"assistant_message": "Your actual response to the user here",
   "reasoning_trace": "A brief explanation of your thought process",
   "chat_summary_update": "A concise summary of this conversation including key facts",
   "user_profile_update": "A summary of the user profile including any new long-term facts learned"
-}}
+}
 """
 
         messages = [{"role": "system", "content": system_prompt}]

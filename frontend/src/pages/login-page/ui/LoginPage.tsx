@@ -297,20 +297,10 @@ export const LoginPage = () => {
               <div className="auth-alert auth-alert-error">{errors.root.message}</div>
             )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn w-full"
-              style={{
-                backgroundColor: 'var(--color-text-strong)',
-                color: 'white',
-                padding: '0.75rem',
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              <span>{isSubmitting ? 'Authenticating...' : 'Sign in to workspace'}</span>
+            <button type="submit" disabled={isSubmitting} className="btn btn-dark w-full">
+              <span style={{ fontWeight: 700 }}>
+                {isSubmitting ? 'Authenticating...' : 'Sign in to workspace'}
+              </span>
               {!isSubmitting && <ArrowRight size={16} />}
             </button>
           </form>

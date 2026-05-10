@@ -43,9 +43,7 @@ async def add_message(session_id: str, role: str, content: str, reasoning_trace:
     message_dict["id"] = str(result.inserted_id)
 
     # Update session's updated_at
-    await db.chat_sessions.update_one(
-        {"_id": ObjectId(session_id)}, {"$set": {"updated_at": datetime.utcnow()}}
-    )
+    await db.chat_sessions.update_one({"_id": ObjectId(session_id)}, {"$set": {"updated_at": datetime.utcnow()}})
     return message_dict
 
 
@@ -58,7 +56,7 @@ async def get_messages(session_id: str, limit: int = 10):
     return messages[::-1]  # Return in chronological order
 
 
-async def process_message_consolidated(user_id: str, session_id: str, content: str):
+async def process_message_consolidated(user_id: str, session_id: str, content: str, agent_type: str = "coding"):
     # 1. Get user and session
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
@@ -74,13 +72,15 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
 
     # 4. Call consolidated LLM via ChatAgent
     llm_data = await chat_agent.process_message(
-        user.get("user_summary", ""), session.get("chat_summary", ""), history[:-1], content
+        user.get("user_summary", ""),
+        session.get("chat_summary", ""),
+        history[:-1],
+        content,
+        agent_type,
     )
 
     # 5. Add assistant message
-    assistant_msg = await add_message(
-        session_id, "assistant", llm_data["assistant_message"], llm_data["reasoning_trace"]
-    )
+    assistant_msg = await add_message(session_id, "assistant", llm_data["assistant_message"], llm_data["reasoning_trace"])
 
     # 6. Update summaries in DB
     await db.chat_sessions.update_one(
@@ -92,9 +92,7 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
             }
         },
     )
-    await db.users.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"user_summary": llm_data["user_profile_update"]}}
-    )
+    await db.users.update_one({"_id": ObjectId(user_id)}, {"$set": {"user_summary": llm_data["user_profile_update"]}})
 
     # 7. Get fresh objects for response
     updated_session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})

@@ -17,22 +17,29 @@ export interface ChatSession {
   updated_at: string;
 }
 
+export type AgentType = 'knowledge' | 'comms' | 'coding';
+
 interface ChatStore {
   sessions: ChatSession[];
   currentSession: ChatSession | null;
   messages: Message[];
+  activeAgent: AgentType;
   isLoading: boolean;
   fetchSessions: () => Promise<void>;
   setCurrentSession: (session: ChatSession) => Promise<void>;
   createSession: (title: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  setActiveAgent: (agent: AgentType) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
   currentSession: null,
   messages: [],
+  activeAgent: 'coding',
   isLoading: false,
+
+  setActiveAgent: (agent) => set({ activeAgent: agent }),
 
   fetchSessions: async () => {
     const { data } = await api.get('/chat/sessions');
@@ -67,7 +74,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   sendMessage: async (content) => {
-    const { currentSession, messages } = get();
+    const { currentSession, messages, activeAgent } = get();
     if (!currentSession) return;
 
     // Optimistic user message
@@ -80,7 +87,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ messages: [...messages, tempUserMsg] });
 
     try {
-      const { data } = await api.post(`/chat/sessions/${currentSession.id}/messages`, { content });
+      const { data } = await api.post(`/chat/sessions/${currentSession.id}/messages`, {
+        content,
+        agent_type: activeAgent,
+      });
 
       // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User }
       const { message, session, user } = data;

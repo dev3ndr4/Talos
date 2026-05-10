@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export const ChatWindow = () => {
-  const { messages, sendMessage, currentSession } = useChatStore();
+  const { messages, sendMessage, currentSession, activeAgent } = useChatStore();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -28,17 +28,8 @@ export const ChatWindow = () => {
         <div className="empty-state-icon">
           <Bot size={32} strokeWidth={1.5} />
         </div>
-        <h2
-          style={{
-            fontSize: '1.25rem',
-            fontWeight: 600,
-            color: 'var(--color-text-strong)',
-            marginBottom: 'var(--spacing-2)',
-          }}
-        >
-          Welcome to Talos
-        </h2>
-        <p style={{ fontSize: '0.875rem', color: 'var(--color-text-subtle)', maxWidth: '24rem' }}>
+        <h2 className="chat-empty-state-title">Welcome to Talos</h2>
+        <p className="chat-empty-state-desc">
           Select a conversation from the sidebar or start a new one to begin your multi-agent
           workflow.
         </p>
@@ -48,21 +39,26 @@ export const ChatWindow = () => {
 
   return (
     <div className="chat-window">
+      <header className="chat-header">
+        <div className="flex items-center gap-3">
+          <div className="agent-badge">
+            <div className="agent-badge-dot" />
+            <span className="agent-badge-text">{activeAgent} Agent</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="btn btn-ghost" style={{ padding: 'var(--spacing-2)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Share</span>
+          </button>
+        </div>
+      </header>
+
       <div className="chat-messages-container" ref={scrollRef}>
         <div className="chat-messages-inner">
           {messages.length === 0 && (
             <div style={{ textAlign: 'center', padding: '5rem 0' }}>
-              <h1
-                style={{
-                  fontSize: '1.875rem',
-                  fontWeight: 700,
-                  color: 'var(--color-text-strong)',
-                  marginBottom: 'var(--spacing-4)',
-                }}
-              >
-                How can I help you today?
-              </h1>
-              <p style={{ color: 'var(--color-text-subtle)' }}>
+              <h1 className="chat-welcome-title">How can I help you today?</h1>
+              <p className="chat-welcome-desc">
                 Talos is ready to assist with coding, knowledge, and communication.
               </p>
             </div>
@@ -70,7 +66,7 @@ export const ChatWindow = () => {
           {messages.map((msg) => (
             <MessageItem key={msg.id} message={msg} />
           ))}
-          <div style={{ height: '8rem' }} /> {/* Bottom spacing for input */}
+          <div style={{ height: '8rem' }} />
         </div>
       </div>
 
@@ -86,10 +82,11 @@ export const ChatWindow = () => {
                   handleSend();
                 }
               }}
-              placeholder="Message Talos..."
+              placeholder={`Message ${
+                activeAgent.charAt(0).toUpperCase() + activeAgent.slice(1)
+              } Agent...`}
               rows={1}
               className="chat-textarea"
-              style={{ height: 'auto' }}
             />
             <button onClick={handleSend} disabled={!input.trim()} className="send-btn">
               <Send size={18} strokeWidth={2} />
