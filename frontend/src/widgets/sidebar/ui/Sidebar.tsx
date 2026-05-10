@@ -228,7 +228,7 @@ export const Sidebar = () => {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-4 flex flex-col gap-1"
+                        className="overflow-hidden pl-10 flex flex-col gap-1"
                       >
                         {folder.session_ids.map((sid) => {
                           const session = sessions.find((s) => s.id === sid);

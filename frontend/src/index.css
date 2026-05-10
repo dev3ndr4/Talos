@@ -199,6 +199,39 @@ body {
   padding-left: var(--spacing-6);
   padding-right: var(--spacing-6);
 }
+.pl-1 {
+  padding-left: var(--spacing-1);
+}
+.pl-2 {
+  padding-left: var(--spacing-2);
+}
+.pl-3 {
+  padding-left: var(--spacing-3);
+}
+.pl-4 {
+  padding-left: var(--spacing-4);
+}
+.pl-5 {
+  padding-left: var(--spacing-5);
+}
+.pl-6 {
+  padding-left: var(--spacing-6);
+}
+.pl-7 {
+  padding-left: 1.75rem;
+}
+.pl-8 {
+  padding-left: var(--spacing-8);
+}
+.pl-9 {
+  padding-left: 2.25rem;
+}
+.pl-10 {
+  padding-left: var(--spacing-10);
+}
+.pl-12 {
+  padding-left: var(--spacing-12);
+}
 .py-1.5 {
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
@@ -932,11 +965,8 @@ body {
 .top-1\/2 {
   top: 50%;
 }
-.-translate-y-1\/2 {
+.-translate-y-1/2 {
   transform: translateY(-50%);
-}
-.pl-9 {
-  padding-left: 2.25rem;
 }
 .pr-4 {
   padding-right: 1rem;
