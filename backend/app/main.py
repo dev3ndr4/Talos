@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import client, init_beanie_db
 from app.domains.auth.models import User
 from app.domains.auth.router import router as auth_router
-from app.domains.chat.models import ChatSession, Message
+from app.domains.chat.models import ChatFolder, ChatSession, Message
 from app.domains.chat.router import router as chat_router
 from app.domains.coding.router import router as coding_router
 from app.domains.comms.router import router as comms_router
@@ -39,7 +39,7 @@ async def startup_event():
 
         # Initialize Beanie
         print("DEBUG: Initializing Beanie ORM...", flush=True)
-        await init_beanie_db([User, ChatSession, Message])
+        await init_beanie_db([User, ChatSession, Message, ChatFolder])
         logger.info("Beanie ORM initialized.")
 
         print("DEBUG: MongoDB and Beanie initialization successful", flush=True)
