@@ -7,20 +7,20 @@ Talos is a high-performance, multi-agent platform designed for developers and kn
 
 ## Visual Foundations
 
-### 1. Color Palette (Soft / Brand Focused)
-We use a refined teal-based palette to reduce cognitive load during long work sessions, inspired by high-productivity tools.
+### 1. Color Palette (Strictly Variable-Driven)
+All colors are defined as CSS variables and mapped via Tailwind. Never use hardcoded hex values in components.
 
 | Token | Hex | Usage |
 | :--- | :--- | :--- |
-| **Primary** | `#10A37F` | Core brand color, primary actions, active states. |
-| **Surface** | `#FFFFFF` | Main background for cards and content areas. |
-| **Muted** | `#F7F8F8` | Secondary backgrounds, inactive tabs, borders (slight teal tint). |
-| **Text-Strong** | `#0D1C18` | Headings, main body text (Darkest Teal). |
-| **Text-Subtle** | `#5F6F6B` | Labels, helper text, timestamps. |
-| **Success** | `#10A37F` | Completed tasks, knowledge verification. |
-| **Warning** | `#F59E0B` | Comms alerts, pending approvals. |
-| **Error** | `#EF4444` | Failed tool calls, system errors. |
-| **Coding** | `#10A37F` | Coding-specific accents and syntax highlighting. |
+| **Primary** | `#10A37F` | Core brand color, primary actions. |
+| **Primary-Hover** | `#0B6E58` | Hover and active states for primary actions. |
+| **Accent** | `#FFB86B` | Sparingly used for contrast, notifications, or highlights. |
+| **BG-Base** | `#F4F8F7` | Main application background. |
+| **BG-Soft** | `#D9F5EE` | Secondary backgrounds, sidebar regions. |
+| **Surface** | `#FFFFFF` | Card backgrounds, modals, input areas. |
+| **Text-Strong** | `#253238` | Headings, main body text. |
+| **Text-Subtle** | `--` | Derived from text-strong with lower opacity. |
+| **Error** | `#EF4444` | Destructive actions, system errors. |
 
 ### 2. Typography
 - **Primary Font:** `Inter` (Sans-serif) - used for all UI elements and body text.

@@ -98,9 +98,7 @@ export const LoginPage = () => {
       {/* Right side: Login Form */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 lg:px-20 py-12 relative">
         {/* Subtle grid for the form side too */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:40px_40px]" />
-        </div>
+        <div className="absolute inset-0 opacity-100 pointer-events-none bg-grid-pattern" />
 
         <div className="w-full max-w-sm relative">
           <div className="mb-10 lg:hidden">
@@ -167,6 +165,14 @@ export const LoginPage = () => {
           <div className="mt-12 pt-8 border-t border-muted">
              <p className="text-center text-sm text-text-subtle font-medium">
                Don't have an account yet? <Link to="/register" className="text-primary font-bold hover:underline">Create an account</Link>
+             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+to="/register" className="text-primary font-bold hover:underline">Create an account</Link>
              </p>
           </div>
         </div>

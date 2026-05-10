@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export const App = () => {
   return (
-    <div className="min-h-screen bg-white text-text-strong font-sans">
+    <div className="min-h-screen bg-bg-base text-text-strong font-sans antialiased">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

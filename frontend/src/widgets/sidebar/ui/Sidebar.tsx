@@ -13,7 +13,7 @@ export const Sidebar = () => {
   }, [fetchSessions]);
 
   return (
-    <div className="flex h-full w-72 flex-col bg-muted border-r border-muted/50">
+    <div className="flex h-full w-72 flex-col bg-bg-soft border-r border-muted/50">
       <div className="p-4">
         <button
           onClick={() => createSession(`New Chat ${sessions.length + 1}`)}

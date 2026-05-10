@@ -7,8 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "rgb(var(--primary) / <alpha-value>)",
+        primary: {
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          hover: "rgb(var(--primary-hover) / <alpha-value>)",
+        },
+        accent: "rgb(var(--accent) / <alpha-value>)",
         surface: "rgb(var(--surface) / <alpha-value>)",
+        bg: {
+          base: "rgb(var(--bg-base) / <alpha-value>)",
+          soft: "rgb(var(--bg-soft) / <alpha-value>)",
+        },
         muted: "rgb(var(--muted) / <alpha-value>)",
         "text-strong": "rgb(var(--text-strong) / <alpha-value>)",
         "text-subtle": "rgb(var(--text-subtle) / <alpha-value>)",

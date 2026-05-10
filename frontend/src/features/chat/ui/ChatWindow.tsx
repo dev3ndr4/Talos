@@ -113,7 +113,10 @@ const MessageItem = ({ message }: { message: Message }) => {
           <div className="w-full mt-2">
             <button
               onClick={() => setShowTrace(!showTrace)}
-              className="flex items-center gap-1 text-[10px] uppercase tracking-widest font-bold text-text-subtle hover:text-primary transition-all bg-muted/30 px-2 py-1 rounded-md"
+              className={clsx(
+                "flex items-center gap-1 text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md transition-all",
+                showTrace ? "bg-accent/20 text-accent" : "text-text-subtle hover:text-primary bg-muted/30"
+              )}
             >
               {showTrace ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
               Reasoning Trace

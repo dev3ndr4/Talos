@@ -3,16 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --primary: 165 82% 34%; /* #10a37f */
-  --surface: 0 0% 100%;    /* #FFFFFF */
-  --muted: 165 20% 98%;    /* #F9FAFB/Teal-tinted */
-  --text-strong: 165 50% 10%; /* Dark Teal-Black */
-  --text-subtle: 165 10% 40%; /* Muted Teal-Gray */
-  --error: 0 84% 60%;      /* #EF4444 */
+  /* Brand Colors */
+  --primary: 165 82% 35%;      /* #10A37F */
+  --primary-hover: 165 82% 24%; /* #0B6E58 */
+  --accent: 31 100% 71%;       /* #FFB86B */
+
+  /* Backgrounds */
+  --surface: 0 0% 100%;         /* #FFFFFF */
+  --bg-soft: 166 54% 91%;      /* #D9F5EE */
+  --bg-base: 165 14% 97%;      /* #F4F8F7 */
+  --muted: 165 14% 95%;        /* Derived muted */
+
+  /* Text */
+  --text-strong: 199 20% 18%;  /* #253238 */
+  --text-subtle: 199 15% 40%;  /* Derived subtle */
+  
+  /* Status */
+  --error: 0 84% 60%;          /* #EF4444 */
+
+  /* Patterns */
+  --pattern-color: var(--primary);
+  --pattern-opacity: 0.1;
 }
 
 @layer base {
   body {
-    @apply bg-white text-text-strong;
+    @apply bg-bg-base text-text-strong font-sans antialiased;
   }
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(rgb(var(--pattern-color) / var(--pattern-opacity)) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgb(var(--text-strong) / 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgb(var(--text-strong) / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
