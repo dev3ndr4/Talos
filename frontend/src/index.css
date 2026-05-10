@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --primary: 243 75% 59%; /* #4F46E5 */
+  --primary: 165 82% 34%; /* #10a37f */
   --surface: 0 0% 100%;    /* #FFFFFF */
-  --muted: 210 40% 98%;    /* #F9FAFB */
-  --text-strong: 221 39% 11%; /* #111827 */
-  --text-subtle: 215 16% 47%; /* #6B7280 */
+  --muted: 165 20% 98%;    /* #F9FAFB/Teal-tinted */
+  --text-strong: 165 50% 10%; /* Dark Teal-Black */
+  --text-subtle: 165 10% 40%; /* Muted Teal-Gray */
   --error: 0 84% 60%;      /* #EF4444 */
 }
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-white text-text-strong;
   }
 }

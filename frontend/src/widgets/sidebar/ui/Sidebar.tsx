@@ -13,49 +13,63 @@ export const Sidebar = () => {
   }, [fetchSessions]);
 
   return (
-    <div className="flex h-full w-64 flex-col bg-surface border-r border-muted">
-      <div className="p-4 border-b border-muted">
+    <div className="flex h-full w-72 flex-col bg-muted border-r border-muted/50">
+      <div className="p-4">
         <button
           onClick={() => createSession(`New Chat ${sessions.length + 1}`)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 py-2.5 text-sm font-semibold text-primary hover:bg-primary/20 transition-colors"
+          className="flex w-full items-center justify-between gap-2 rounded-xl bg-surface border border-muted/50 px-4 py-3 text-sm font-medium text-text-strong shadow-sm hover:bg-muted/50 transition-all group"
         >
-          <Plus size={18} strokeWidth={1.5} />
-          New Conversation
+          <div className="flex items-center gap-2">
+            <Plus size={18} strokeWidth={1.5} className="text-primary" />
+            <span>New Conversation</span>
+          </div>
+          <span className="text-[10px] text-text-subtle group-hover:text-primary transition-colors">⌘N</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
+        <div className="px-3 mb-2">
+          <p className="text-[10px] font-bold text-text-subtle uppercase tracking-widest">Recent Chats</p>
+        </div>
         {sessions.map((session) => (
           <button
             key={session.id}
             onClick={() => setCurrentSession(session)}
             className={clsx(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all relative group",
               currentSession?.id === session.id
-                ? "bg-muted text-text-strong font-medium"
-                : "text-text-subtle hover:bg-muted/50 hover:text-text-strong"
+                ? "bg-surface text-text-strong shadow-sm ring-1 ring-muted"
+                : "text-text-subtle hover:bg-surface/50 hover:text-text-strong"
             )}
           >
-            <MessageSquare size={16} strokeWidth={1.5} className="shrink-0" />
+            <MessageSquare size={16} strokeWidth={1.5} className={clsx(
+              "shrink-0",
+              currentSession?.id === session.id ? "text-primary" : "text-text-subtle group-hover:text-primary"
+            )} />
             <span className="truncate">{session.title}</span>
+            {currentSession?.id === session.id && (
+              <div className="absolute left-0 w-1 h-4 bg-primary rounded-full" />
+            )}
           </button>
         ))}
       </div>
 
-      <div className="p-4 border-t border-muted bg-muted/5">
-        <div className="flex items-center gap-3 mb-4 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <UserIcon size={16} strokeWidth={1.5} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-text-strong truncate">{user?.email}</p>
-            <p className="text-[10px] text-text-subtle uppercase tracking-wider font-bold">Authenticated</p>
+      <div className="mt-auto p-4 space-y-4">
+        <div className="rounded-2xl bg-surface/50 border border-muted/50 p-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/20">
+              <UserIcon size={18} strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-text-strong truncate">{user?.email?.split('@')[0]}</p>
+              <p className="text-[10px] text-text-subtle font-medium">Free Plan</p>
+            </div>
           </div>
         </div>
         
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-text-subtle hover:text-error transition-colors"
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-text-subtle hover:bg-error/10 hover:text-error transition-all"
         >
           <LogOut size={14} strokeWidth={1.5} />
           Sign out
