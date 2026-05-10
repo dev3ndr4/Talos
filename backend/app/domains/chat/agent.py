@@ -166,8 +166,18 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
                 if not tool_calls:
                     # Final response reached or no tool calls
                     raw_content = "".join([part.text for part in candidate.content.parts if part.text])
+
+                    cleaned_content = raw_content.strip()
+                    if cleaned_content.startswith("```json"):
+                        cleaned_content = cleaned_content[7:]
+                    elif cleaned_content.startswith("```"):
+                        cleaned_content = cleaned_content[3:]
+                    if cleaned_content.endswith("```"):
+                        cleaned_content = cleaned_content[:-3]
+                    cleaned_content = cleaned_content.strip()
+
                     try:
-                        final_data = json.loads(raw_content)
+                        final_data = json.loads(cleaned_content)
                         # Append the gathered reasoning log
                         if reasoning_log:
                             trace_header = "\n\n### Autonomous Action Log:\n"

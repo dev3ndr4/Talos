@@ -5,7 +5,6 @@ import subprocess
 import requests
 import wikipedia
 from bs4 import BeautifulSoup
-from googlesearch import search
 from pydantic import Field
 
 from app.core.tools.base import BaseTool
@@ -92,11 +91,13 @@ class WebSearch(BaseTool):
 
     def _sync_search(self):
         try:
-            results = search(self.query, num_results=5)
-            urls = list(results)
-            if not urls:
+            from ddgs import DDGS
+
+            with DDGS() as ddgs:
+                results = list(ddgs.text(self.query, max_results=5))
+            if not results:
                 return "No results found."
-            return "\n".join([f"- {url}" for url in urls])
+            return "\n".join([f"- {res.get('title', 'No Title')} ({res.get('href', 'No URL')})" for res in results])
         except Exception as e:
             return f"ERROR: Web search failed: {str(e)}"
 
