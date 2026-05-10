@@ -1,8 +1,21 @@
 import json
 
 import litellm
+from litellm.exceptions import RateLimitError
 
 from app.core.config import settings
+
+
+class AgentRateLimitError(Exception):
+    """Raised when the LLM provider returns a rate limit error."""
+
+    pass
+
+
+class AgentGeneralError(Exception):
+    """Raised for any other errors during LLM processing."""
+
+    pass
 
 
 class ChatAgent:
@@ -66,22 +79,17 @@ CRITICAL: You MUST return your response as a JSON object with the following stru
         # Add current user message
         messages.append({"role": "user", "content": current_message})
 
-        # Call LiteLLM
-        response = await litellm.acompletion(
-            model=self.model,
-            messages=messages,
-            api_key=self.api_key,
-            response_format={"type": "json_object"},
-        )
-
         try:
+            # Call LiteLLM
+            response = await litellm.acompletion(
+                model=self.model,
+                messages=messages,
+                api_key=self.api_key,
+                response_format={"type": "json_object"},
+            )
             raw_content = response.choices[0].message.content
             return json.loads(raw_content)
-        except Exception:
-            # Fallback if JSON fails
-            return {
-                "assistant_message": response.choices[0].message.content,
-                "reasoning_trace": "Error parsing reasoning.",
-                "chat_summary_update": chat_summary,
-                "user_profile_update": user_summary,
-            }
+        except RateLimitError as e:
+            raise AgentRateLimitError(str(e)) from e
+        except Exception as e:
+            raise AgentGeneralError(str(e)) from e

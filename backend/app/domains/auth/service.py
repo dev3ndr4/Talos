@@ -4,7 +4,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
-from app.core.database import db
+from app.domains.auth.models import User
 from app.domains.auth.schemas import UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -30,21 +30,22 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 async def get_user_by_email(email: str):
-    user = await db.users.find_one({"email": email})
+    user = await User.find_one(User.email == email)
     if user:
-        user["id"] = str(user.pop("_id"))
-    return user
+        # Convert to dict and ensure 'id' is a string for Pydantic compatibility
+        user_dict = user.model_dump()
+        user_dict["id"] = str(user.id)
+        return user_dict
+    return None
 
 
 async def create_user(user_in: UserCreate):
     hashed_password = get_password_hash(user_in.password)
-    user_dict = {
-        "email": user_in.email,
-        "hashed_password": hashed_password,
-        "user_summary": "User is a new visitor to Talos.",
-        "created_at": datetime.utcnow(),
-    }
-    result = await db.users.insert_one(user_dict)
-    user_dict["id"] = str(result.inserted_id)
-    user_dict.pop("_id", None)
+    user = User(
+        email=user_in.email,
+        hashed_password=hashed_password,
+    )
+    await user.insert()
+    user_dict = user.model_dump()
+    user_dict["id"] = str(user.id)
     return user_dict

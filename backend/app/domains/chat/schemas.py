@@ -43,3 +43,4 @@ class ConsolidatedMessageResponse(BaseModel):
     message: MessageResponse
     session: ChatSessionResponse
     user: UserResponse
+    error: str | None = None

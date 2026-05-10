@@ -5,22 +5,31 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from mongomock_motor import AsyncMongoMockClient
 
-from app.main import app
+from app.core.database import init_beanie_db
+from app.domains.auth.models import User
+from app.domains.chat.models import ChatSession, Message
 
-# Mock DB before importing app to avoid early reference capture
+# Mock DB setup
 mock_client = AsyncMongoMockClient()
 mock_db_instance = mock_client.talos_test_db
 
-# Aggressive patching
+# Patch core database module to use mock
+# This ensures raw motor calls in things like health checks use the mock
 patchers = [
     patch("app.core.database.client", mock_client),
     patch("app.core.database.db", mock_db_instance),
-    patch("app.domains.auth.service.db", mock_db_instance),
-    patch("app.domains.chat.service.db", mock_db_instance),
 ]
 
 for p in patchers:
     p.start()
+
+from app.main import app  # noqa: E402
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def initialize_beanie():
+    """Initialize Beanie once for the test session."""
+    await init_beanie_db([User, ChatSession, Message])
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -45,5 +54,6 @@ async def client():
 async def clean_db():
     collections = await mock_db_instance.list_collection_names()
     for col in collections:
-        await mock_db_instance[col].delete_many({})
+        if col != "system.indexes":
+            await mock_db_instance[col].delete_many({})
     yield

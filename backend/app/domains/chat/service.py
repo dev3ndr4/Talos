@@ -2,34 +2,33 @@ from datetime import datetime
 
 from bson import ObjectId
 
-from app.core.database import db
-from app.domains.chat.agent import ChatAgent
+from app.domains.auth.models import User
+from app.domains.chat.agent import AgentRateLimitError, ChatAgent
+from app.domains.chat.models import ChatSession, Message
 from app.domains.chat.schemas import ChatSessionCreate
 
 chat_agent = ChatAgent()
 
 
 async def create_chat_session(user_id: str, session_in: ChatSessionCreate):
-    session_dict = {
-        "user_id": user_id,
-        "title": session_in.title,
-        "chat_summary": "This is a new conversation.",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-    }
-    result = await db.chat_sessions.insert_one(session_dict)
-    session_dict["id"] = str(result.inserted_id)
-    session_dict.pop("_id", None)
+    session = ChatSession(
+        user_id=user_id,
+        title=session_in.title,
+    )
+    await session.insert()
+    session_dict = session.model_dump()
+    session_dict["id"] = str(session.id)
     return session_dict
 
 
 async def get_chat_sessions(user_id: str):
-    cursor = db.chat_sessions.find({"user_id": user_id}).sort("updated_at", -1)
-    sessions = []
-    async for doc in cursor:
-        doc["id"] = str(doc.pop("_id"))
-        sessions.append(doc)
-    return sessions
+    sessions = await ChatSession.find(ChatSession.user_id == user_id).sort(-ChatSession.updated_at).to_list()
+    result = []
+    for s in sessions:
+        s_dict = s.model_dump()
+        s_dict["id"] = str(s.id)
+        result.append(s_dict)
+    return result
 
 
 async def add_message(
@@ -39,38 +38,39 @@ async def add_message(
     reasoning_trace: str | None = None,
     email_draft: dict | None = None,
 ):
-    message_dict = {
-        "session_id": session_id,
-        "role": role,
-        "content": content,
-        "reasoning_trace": reasoning_trace,
-        "email_draft": email_draft,
-        "created_at": datetime.utcnow(),
-    }
-    result = await db.messages.insert_one(message_dict)
-    message_dict["id"] = str(result.inserted_id)
-    message_dict.pop("_id", None)
+    message = Message(
+        session_id=session_id,
+        role=role,
+        content=content,
+        reasoning_trace=reasoning_trace,
+        email_draft=email_draft,
+    )
+    await message.insert()
 
     # Update session's updated_at
-    await db.chat_sessions.update_one({"_id": ObjectId(session_id)}, {"$set": {"updated_at": datetime.utcnow()}})
+    await ChatSession.find_one(ChatSession.id == ObjectId(session_id)).update({"$set": {"updated_at": datetime.utcnow()}})
+
+    message_dict = message.model_dump()
+    message_dict["id"] = str(message.id)
     return message_dict
 
 
 async def get_messages(session_id: str, limit: int = 10):
-    cursor = db.messages.find({"session_id": session_id}).sort("created_at", -1).limit(limit)
-    messages = []
-    async for doc in cursor:
-        doc["id"] = str(doc.pop("_id"))
-        messages.append(doc)
-    return messages[::-1]  # Return in chronological order
+    messages = await Message.find(Message.session_id == session_id).sort(-Message.created_at).limit(limit).to_list()
+    result = []
+    for m in messages:
+        m_dict = m.model_dump()
+        m_dict["id"] = str(m.id)
+        result.append(m_dict)
+    return result[::-1]  # Return in chronological order
 
 
 async def process_message_consolidated(user_id: str, session_id: str, content: str, agent_type: str = "coding"):
     # 1. Get user and session
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
-    session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
+    user_doc = await User.find_one(User.id == ObjectId(user_id))
+    session_doc = await ChatSession.find_one(ChatSession.id == ObjectId(session_id))
 
-    if not user or not session:
+    if not user_doc or not session_doc:
         return None
 
     # 2. Add user message
@@ -79,14 +79,53 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
     # 3. Get context
     history = await get_messages(session_id, limit=5)
 
-    # 4. Call consolidated LLM via ChatAgent
-    llm_data = await chat_agent.process_message(
-        user.get("user_summary", ""),
-        session.get("chat_summary", ""),
-        history[:-1],
-        content,
-        agent_type,
-    )
+    # 4. Call consolidated LLM via ChatAgent with retries
+    MAX_RETRIES = 3
+    llm_data = None
+    last_error = None
+
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            llm_data = await chat_agent.process_message(
+                user_doc.user_summary,
+                session_doc.chat_summary,
+                history[:-1],
+                content,
+                agent_type,
+            )
+            break
+        except AgentRateLimitError:
+            # Rate limit: don't retry, notify user to wait
+            assistant_msg = await add_message(
+                session_id,
+                "assistant",
+                "I'm sorry, I'm currently experiencing rate limits. Please try again in a few minutes.",
+                "Rate limit encountered.",
+            )
+            # Match old behavior by returning dicts
+            return {
+                "message": assistant_msg,
+                "session": {**session_doc.model_dump(), "id": str(session_doc.id)},
+                "user": {**user_doc.model_dump(), "id": str(user_doc.id)},
+                "error": "rate_limit",
+            }
+        except Exception as e:
+            last_error = e
+            if attempt < MAX_RETRIES:
+                continue
+            # Final failure after retries
+            assistant_msg = await add_message(
+                session_id,
+                "assistant",
+                "I'm having trouble processing your request. Our team has been notified. Please try creating a new chat session.",
+                f"Final failure after {MAX_RETRIES} retries: {str(last_error)}",
+            )
+            return {
+                "message": assistant_msg,
+                "session": {**session_doc.model_dump(), "id": str(session_doc.id)},
+                "user": {**user_doc.model_dump(), "id": str(user_doc.id)},
+                "error": "final_failure",
+            }
 
     # 5. Add assistant message
     assistant_msg = await add_message(
@@ -98,23 +137,24 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
     )
 
     # 6. Update summaries in DB
-    await db.chat_sessions.update_one(
-        {"_id": ObjectId(session_id)},
+    await session_doc.update(
         {
             "$set": {
                 "chat_summary": llm_data["chat_summary_update"],
                 "updated_at": datetime.utcnow(),
             }
-        },
+        }
     )
-    await db.users.update_one({"_id": ObjectId(user_id)}, {"$set": {"user_summary": llm_data["user_profile_update"]}})
+    await user_doc.update({"$set": {"user_summary": llm_data["user_profile_update"]}})
 
     # 7. Get fresh objects for response
-    updated_session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
-    updated_session["id"] = str(updated_session.pop("_id"))
-    updated_session["user_id"] = str(updated_session["user_id"])
+    updated_session = await ChatSession.find_one(ChatSession.id == ObjectId(session_id))
+    updated_session_dict = updated_session.model_dump()
+    updated_session_dict["id"] = str(updated_session.id)
+    updated_session_dict["user_id"] = str(updated_session.user_id)
 
-    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
-    updated_user["id"] = str(updated_user.pop("_id"))
+    updated_user = await User.find_one(User.id == ObjectId(user_id))
+    updated_user_dict = updated_user.model_dump()
+    updated_user_dict["id"] = str(updated_user.id)
 
-    return {"message": assistant_msg, "session": updated_session, "user": updated_user}
+    return {"message": assistant_msg, "session": updated_session_dict, "user": updated_user_dict}

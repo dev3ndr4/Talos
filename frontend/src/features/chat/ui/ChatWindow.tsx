@@ -102,6 +102,7 @@ export const ChatWindow = () => {
 const MessageItem = ({ message }: { message: Message }) => {
   const isAssistant = message.role === 'assistant';
   const [showTrace, setShowTrace] = useState(false);
+  const { retryMessage } = useChatStore();
 
   return (
     <div className={clsx('message-item', isAssistant ? 'assistant' : 'user')}>
@@ -244,6 +245,24 @@ const MessageItem = ({ message }: { message: Message }) => {
               <Mail size={16} strokeWidth={1.5} />
               Open in Mail App
             </a>
+          </div>
+        )}
+
+        {isAssistant && message.error && message.error !== 'final_failure' && (
+          <div style={{ marginTop: 'var(--spacing-3)' }}>
+            <button
+              onClick={() => retryMessage(message.id)}
+              className="btn btn-ghost flex items-center gap-2 w-fit"
+              style={{
+                padding: 'var(--spacing-2) var(--spacing-4)',
+                borderRadius: 'var(--radius-lg)',
+                fontSize: '0.75rem',
+                color: 'var(--color-primary)',
+                border: '1px solid var(--color-primary)',
+              }}
+            >
+              Retry Response
+            </button>
           </div>
         )}
       </div>

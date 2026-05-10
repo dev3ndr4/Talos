@@ -13,6 +13,7 @@ export interface Message {
     body: string;
   };
   created_at: string;
+  error?: string;
 }
 
 export interface ChatSession {
@@ -34,6 +35,7 @@ interface ChatStore {
   setCurrentSession: (session: ChatSession) => Promise<void>;
   createSession: (title: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  retryMessage: (messageId: string) => Promise<void>;
   setActiveAgent: (agent: AgentType) => void;
 }
 
@@ -78,6 +80,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set((state) => ({ sessions: [data, ...state.sessions], currentSession: data, messages: [] }));
   },
 
+  retryMessage: async (messageId) => {
+    const { messages } = get();
+    // Find the last user message to retry
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+    if (lastUserMsg) {
+      // Remove the failed assistant message from current view
+      set((state) => ({
+        messages: state.messages.filter((m) => m.id !== messageId),
+      }));
+      // Re-send the last user message content
+      await get().sendMessage(lastUserMsg.content);
+    }
+  },
+
   sendMessage: async (content) => {
     const { currentSession, messages, activeAgent } = get();
     if (!currentSession) return;
@@ -97,8 +113,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         agent_type: activeAgent,
       });
 
-      // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User }
-      const { message, session, user } = data;
+      // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User, error?: string }
+      const { message, session, user, error } = data;
+
+      if (error) {
+        message.error = error;
+      }
 
       // Update User Store
       useUserStore.getState().setUser(user);
@@ -113,6 +133,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }));
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Add a client-side error message if the API call itself fails
+      const errorMessage: Message = {
+        id: Math.random().toString(),
+        role: 'assistant',
+        content: 'I encountered a network error. Please check your connection and try again.',
+        created_at: new Date().toISOString(),
+        error: 'network_error',
+      };
+      set((state) => ({
+        messages: [...state.messages, errorMessage],
+      }));
     }
   },
 }));
