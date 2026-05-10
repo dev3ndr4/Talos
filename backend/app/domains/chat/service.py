@@ -19,28 +19,37 @@ async def create_chat_session(user_id: str, session_in: ChatSessionCreate):
     }
     result = await db.chat_sessions.insert_one(session_dict)
     session_dict["id"] = str(result.inserted_id)
+    session_dict.pop("_id", None)
     return session_dict
 
 
 async def get_chat_sessions(user_id: str):
-    cursor = db.chat_sessions.find({"user_id": user_id})
+    cursor = db.chat_sessions.find({"user_id": user_id}).sort("updated_at", -1)
     sessions = []
     async for doc in cursor:
-        doc["id"] = str(doc["_id"])
+        doc["id"] = str(doc.pop("_id"))
         sessions.append(doc)
     return sessions
 
 
-async def add_message(session_id: str, role: str, content: str, reasoning_trace: str | None = None):
+async def add_message(
+    session_id: str,
+    role: str,
+    content: str,
+    reasoning_trace: str | None = None,
+    email_draft: dict | None = None,
+):
     message_dict = {
         "session_id": session_id,
         "role": role,
         "content": content,
         "reasoning_trace": reasoning_trace,
+        "email_draft": email_draft,
         "created_at": datetime.utcnow(),
     }
     result = await db.messages.insert_one(message_dict)
     message_dict["id"] = str(result.inserted_id)
+    message_dict.pop("_id", None)
 
     # Update session's updated_at
     await db.chat_sessions.update_one({"_id": ObjectId(session_id)}, {"$set": {"updated_at": datetime.utcnow()}})
@@ -51,7 +60,7 @@ async def get_messages(session_id: str, limit: int = 10):
     cursor = db.messages.find({"session_id": session_id}).sort("created_at", -1).limit(limit)
     messages = []
     async for doc in cursor:
-        doc["id"] = str(doc["_id"])
+        doc["id"] = str(doc.pop("_id"))
         messages.append(doc)
     return messages[::-1]  # Return in chronological order
 
@@ -80,7 +89,13 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
     )
 
     # 5. Add assistant message
-    assistant_msg = await add_message(session_id, "assistant", llm_data["assistant_message"], llm_data["reasoning_trace"])
+    assistant_msg = await add_message(
+        session_id,
+        "assistant",
+        llm_data["assistant_message"],
+        llm_data["reasoning_trace"],
+        llm_data.get("email_draft"),
+    )
 
     # 6. Update summaries in DB
     await db.chat_sessions.update_one(
@@ -96,9 +111,10 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
 
     # 7. Get fresh objects for response
     updated_session = await db.chat_sessions.find_one({"_id": ObjectId(session_id)})
-    updated_session["id"] = str(updated_session["_id"])
+    updated_session["id"] = str(updated_session.pop("_id"))
+    updated_session["user_id"] = str(updated_session["user_id"])
 
     updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
-    updated_user["id"] = str(updated_user["_id"])
+    updated_user["id"] = str(updated_user.pop("_id"))
 
     return {"message": assistant_msg, "session": updated_session, "user": updated_user}

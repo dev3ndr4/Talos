@@ -32,7 +32,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 async def get_user_by_email(email: str):
     user = await db.users.find_one({"email": email})
     if user:
-        user["id"] = str(user["_id"])
+        user["id"] = str(user.pop("_id"))
     return user
 
 
@@ -46,4 +46,5 @@ async def create_user(user_in: UserCreate):
     }
     result = await db.users.insert_one(user_dict)
     user_dict["id"] = str(result.inserted_id)
+    user_dict.pop("_id", None)
     return user_dict

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore, Message } from '@/entities/chat/model/store';
-import { Send, ChevronDown, ChevronUp, Bot, User } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, Bot, User, Mail } from 'lucide-react';
 import { clsx } from 'clsx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -114,7 +114,6 @@ const MessageItem = ({ message }: { message: Message }) => {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              // These components use styles defined in index.css under .message-content
               p: ({ children }) => <p>{children}</p>,
               h1: ({ children }) => <h1>{children}</h1>,
               h2: ({ children }) => <h2>{children}</h2>,
@@ -225,6 +224,26 @@ const MessageItem = ({ message }: { message: Message }) => {
                 {message.reasoning_trace}
               </div>
             )}
+          </div>
+        )}
+
+        {isAssistant && message.email_draft && (
+          <div style={{ marginTop: 'var(--spacing-3)' }}>
+            <a
+              href={`mailto:${message.email_draft.to || ''}?subject=${encodeURIComponent(
+                message.email_draft.subject
+              )}&body=${encodeURIComponent(message.email_draft.body)}`}
+              className="btn btn-primary flex items-center gap-2 w-fit"
+              style={{
+                textDecoration: 'none',
+                padding: 'var(--spacing-2) var(--spacing-4)',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.875rem',
+              }}
+            >
+              <Mail size={16} strokeWidth={1.5} />
+              Open in Mail App
+            </a>
           </div>
         )}
       </div>

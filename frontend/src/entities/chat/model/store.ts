@@ -7,6 +7,11 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   reasoning_trace?: string;
+  email_draft?: {
+    to?: string;
+    subject: string;
+    body: string;
+  };
   created_at: string;
 }
 

@@ -44,11 +44,17 @@ CURRENT CONVERSATION MEMORY:
 Follow the 'Glass Box' philosophy: explain your reasoning in a clear, transparent way.
 
 CRITICAL: You MUST return your response as a JSON object with the following structure:
-{"assistant_message": "Your actual response to the user here",
+{{
+  "assistant_message": "Your actual response to the user here",
   "reasoning_trace": "A brief explanation of your thought process",
   "chat_summary_update": "A concise summary of this conversation including key facts",
-  "user_profile_update": "A summary of the user profile including any new long-term facts learned"
-}
+  "user_profile_update": "A summary of the user profile including any new long-term facts learned",
+  "email_draft": {{
+    "to": "recipient@example.com (optional)",
+    "subject": "Email subject",
+    "body": "Email body content"
+  }} (OPTIONAL: Only include this if you are drafting an email in COMMS mode)
+}}
 """
 
         messages = [{"role": "system", "content": system_prompt}]
