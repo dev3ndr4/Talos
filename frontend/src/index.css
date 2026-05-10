@@ -70,6 +70,7 @@ body {
   z-index: -1;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   overflow: hidden;
+  transition: opacity 1s ease;
 }
 
 .bg-orb {
@@ -78,6 +79,15 @@ body {
   filter: blur(80px);
   opacity: 0.4;
   animation: orb-move 20s infinite alternate ease-in-out;
+  transition:
+    opacity 1s ease,
+    transform 1s ease;
+}
+
+.chat-active .bg-orb {
+  opacity: 0;
+  transform: scale(1.2);
+  pointer-events: none;
 }
 
 .bg-orb-1 {

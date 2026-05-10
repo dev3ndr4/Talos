@@ -30,7 +30,7 @@ export interface ChatFolder {
   is_expanded: boolean;
 }
 
-export type AgentType = 'knowledge' | 'comms' | 'coding';
+export type AgentType = 'simple' | 'knowledge' | 'comms' | 'coding';
 
 interface ChatStore {
   sessions: ChatSession[];
@@ -59,7 +59,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   folders: [],
   currentSession: null,
   messages: [],
-  activeAgent: 'coding',
+  activeAgent: 'simple',
   isLoading: false,
 
   setActiveAgent: (agent) => set({ activeAgent: agent }),
@@ -118,7 +118,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       await api.patch(`/chat/folders/${folderId}`, { is_expanded: newExpanded });
-    } catch (error) {
+    } catch {
       // Revert on error
       set((state) => ({
         folders: state.folders.map((f) =>
@@ -139,8 +139,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     try {
       const { data } = await api.get(`/chat/sessions/${session.id}/messages`);
       set({ messages: data, isLoading: false });
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
+    } catch (_error) {
+      console.error('Failed to fetch messages:', _error);
       set({ messages: [], isLoading: false });
     }
   },
@@ -184,11 +184,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         agent_type: activeAgent,
       });
 
-      // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User, error?: string }
-      const { message, session, user, error } = data;
+      // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User, error?: string, detected_agent_type?: AgentType }
+      const { message, session, user, error: _error, detected_agent_type } = data;
 
-      if (error) {
-        message.error = error;
+      if (_error) {
+        message.error = _error;
+      }
+
+      // Update Active Agent if detected
+      if (detected_agent_type && detected_agent_type !== get().activeAgent) {
+        set({ activeAgent: detected_agent_type });
       }
 
       // Update User Store
@@ -202,8 +207,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         currentSession: session,
         sessions: state.sessions.map((s) => (s.id === session.id ? session : s)),
       }));
-    } catch (error) {
-      console.error('Failed to send message:', error);
+    } catch (_error) {
+      console.error('Failed to send message:', _error);
       // Add a client-side error message if the API call itself fails
       const errorMessage: Message = {
         id: Math.random().toString(),

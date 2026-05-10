@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useChatStore, ChatSession, ChatFolder } from '@/entities/chat/model/store';
+import { useChatStore, ChatSession } from '@/entities/chat/model/store';
 import { useUserStore } from '@/entities/user/model/store';
 import { useUIStore } from '@/shared/model/ui-store';
 import {
@@ -12,7 +12,6 @@ import {
   Folder,
   ChevronRight,
   ChevronDown,
-  MoreHorizontal,
   FolderOpen,
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -35,6 +34,9 @@ export const Sidebar = () => {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
+  const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
@@ -48,6 +50,31 @@ export const Sidebar = () => {
     }
   };
 
+  const onDragStart = (e: React.DragEvent, sessionId: string) => {
+    setDraggedSessionId(sessionId);
+    e.dataTransfer.setData('sessionId', sessionId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const onDragOverFolder = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    setDragOverFolderId(folderId);
+  };
+
+  const onDragLeaveFolder = () => {
+    setDragOverFolderId(null);
+  };
+
+  const onDropOnFolder = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    const sessionId = e.dataTransfer.getData('sessionId');
+    if (sessionId) {
+      moveChatToFolder(sessionId, folderId);
+    }
+    setDragOverFolderId(null);
+    setDraggedSessionId(null);
+  };
+
   const uncategorizedSessions = sessions.filter(
     (s) => !folders.some((f) => f.session_ids.includes(s.id))
   );
@@ -58,8 +85,15 @@ export const Sidebar = () => {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -10 }}
+      draggable
+      onDragStart={(e) => onDragStart(e, session.id)}
+      onDragEnd={() => setDraggedSessionId(null)}
       onClick={() => setCurrentSession(session)}
-      className={clsx('nav-item group relative', currentSession?.id === session.id && 'active')}
+      className={clsx(
+        'nav-item group relative',
+        currentSession?.id === session.id && 'active',
+        draggedSessionId === session.id && 'opacity-50 grayscale scale-95'
+      )}
     >
       <MessageSquare
         size={16}
@@ -76,25 +110,6 @@ export const Sidebar = () => {
           className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
         />
       )}
-
-      {/* Folder Assignment Dropdown Placeholder */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-        <select
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => moveChatToFolder(session.id, e.target.value || null)}
-          className="bg-transparent border-none text-[10px] text-text-subtle focus:ring-0 cursor-pointer w-4 h-4 p-0 appearance-none"
-          value={folders.find((f) => f.session_ids.includes(session.id))?.id || ''}
-          title="Move to folder"
-        >
-          <option value="">None</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-        <Folder size={12} className="text-text-subtle" />
-      </div>
     </motion.button>
   );
 
@@ -164,7 +179,14 @@ export const Sidebar = () => {
                 <div key={folder.id} className="flex flex-col gap-0.5">
                   <button
                     onClick={() => toggleFolderExpanded(folder.id)}
-                    className="nav-item hover:bg-white/30"
+                    onDragOver={(e) => onDragOverFolder(e, folder.id)}
+                    onDragLeave={onDragLeaveFolder}
+                    onDrop={(e) => onDropOnFolder(e, folder.id)}
+                    className={clsx(
+                      'nav-item hover:bg-white/30 transition-all duration-300',
+                      dragOverFolderId === folder.id &&
+                        'bg-primary/10 border-primary/30 border-dashed border-2 scale-[1.02] shadow-lg z-10'
+                    )}
                   >
                     {folder.is_expanded ? (
                       <ChevronDown size={14} strokeWidth={1.5} className="text-text-subtle" />
@@ -172,11 +194,28 @@ export const Sidebar = () => {
                       <ChevronRight size={14} strokeWidth={1.5} className="text-text-subtle" />
                     )}
                     {folder.is_expanded ? (
-                      <FolderOpen size={16} strokeWidth={1.5} className="text-primary/70" />
+                      <FolderOpen
+                        size={16}
+                        strokeWidth={1.5}
+                        className={clsx(
+                          dragOverFolderId === folder.id ? 'text-primary' : 'text-primary/70'
+                        )}
+                      />
                     ) : (
-                      <Folder size={16} strokeWidth={1.5} className="text-primary/70" />
+                      <Folder
+                        size={16}
+                        strokeWidth={1.5}
+                        className={clsx(
+                          dragOverFolderId === folder.id ? 'text-primary' : 'text-primary/70'
+                        )}
+                      />
                     )}
-                    <span className="truncate flex-1 font-semibold text-xs text-text-main">
+                    <span
+                      className={clsx(
+                        'truncate flex-1 font-semibold text-xs',
+                        dragOverFolderId === folder.id ? 'text-primary' : 'text-text-main'
+                      )}
+                    >
                       {folder.name}
                     </span>
                     <span className="text-[10px] text-text-subtle bg-muted/30 px-1.5 py-0.5 rounded-full">

@@ -21,7 +21,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fetchMe = useUserStore((state) => state.fetchMe);
-  const successMessage = (location.state as any)?.message;
+  const successMessage = (location.state as { message?: string })?.message;
   const {
     register,
     handleSubmit,
@@ -37,9 +37,11 @@ export const LoginPage = () => {
       localStorage.setItem('talos_token', response.data.access_token);
       await fetchMe();
       navigate('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { detail?: string } } };
       setError('root', {
-        message: error.response?.data?.detail || 'Login failed. Please check your credentials.',
+        message:
+          axiosError.response?.data?.detail || 'Login failed. Please check your credentials.',
       });
     }
   };

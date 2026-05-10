@@ -24,7 +24,7 @@ export const useUserStore = create<UserStore>((set) => ({
       set({ isLoading: true });
       const { data } = await api.get('/auth/me');
       set({ user: data, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ user: null, isLoading: false });
     }
   },

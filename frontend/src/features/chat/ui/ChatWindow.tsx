@@ -55,7 +55,9 @@ export const ChatWindow = () => {
                 </p>
               </motion.div>
             ) : (
-              messages.map((msg, index) => <MessageItem key={msg.id} message={msg} index={index} />)
+              messages.map((msg, index) => (
+                <MessageItem key={msg.id} message={msg} _index={index} />
+              ))
             )}
           </AnimatePresence>
           <div style={{ height: '8rem' }} />
@@ -91,14 +93,14 @@ export const ChatWindow = () => {
   );
 };
 
-const MessageItem = ({ message, index }: { message: Message; index: number }) => {
+const MessageItem = ({ message, _index }: { message: Message; _index: number }) => {
   const isAssistant = message.role === 'assistant';
   const [showTrace, setShowTrace] = useState(false);
   const { retryMessage } = useChatStore();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      initial={{ opacity: 0, y: isAssistant ? 0 : 10, scale: isAssistant ? 1 : 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, delay: 0.05 }}
       className={clsx('message-item', isAssistant ? 'assistant' : 'user')}

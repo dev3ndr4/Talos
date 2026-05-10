@@ -40,9 +40,10 @@ export const RegisterPage = () => {
         password: data.password,
       });
       navigate('/login', { state: { message: 'Account created successfully! Please sign in.' } });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { detail?: string } } };
       setError('root', {
-        message: error.response?.data?.detail || 'Registration failed. Please try again.',
+        message: axiosError.response?.data?.detail || 'Registration failed. Please try again.',
       });
     }
   };

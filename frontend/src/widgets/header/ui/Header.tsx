@@ -1,7 +1,7 @@
 import React from 'react';
 import { useChatStore, AgentType } from '@/entities/chat/model/store';
 import { useUIStore } from '@/shared/model/ui-store';
-import { Code, Library, MessageCircle, Share2, PanelLeft } from 'lucide-react';
+import { Code, Library, MessageCircle, Share2, PanelLeft, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
@@ -10,6 +10,7 @@ export const Header = () => {
   const { toggleSidebar } = useUIStore();
 
   const agents: { type: AgentType; icon: React.ReactNode; label: string }[] = [
+    { type: 'simple', icon: <Sparkles size={14} strokeWidth={2} />, label: 'Simple' },
     { type: 'coding', icon: <Code size={14} strokeWidth={2} />, label: 'Coding' },
     { type: 'knowledge', icon: <Library size={14} strokeWidth={2} />, label: 'Knowledge' },
     { type: 'comms', icon: <MessageCircle size={14} strokeWidth={2} />, label: 'Comms' },

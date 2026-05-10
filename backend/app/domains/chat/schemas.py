@@ -43,6 +43,7 @@ class ConsolidatedMessageResponse(BaseModel):
     message: MessageResponse
     session: ChatSessionResponse
     user: UserResponse
+    detected_agent_type: str | None = None
     error: str | None = None
 
 

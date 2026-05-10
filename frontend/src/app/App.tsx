@@ -7,11 +7,13 @@ import { useUIStore } from '@/shared/model/ui-store';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { Header } from '@/widgets/header/ui/Header';
 import { ChatWindow } from '@/features/chat/ui/ChatWindow';
+import { useChatStore } from '@/entities/chat/model/store';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clsx } from 'clsx';
 
-const BackgroundAnimation = () => {
+const BackgroundAnimation = ({ isChatActive }: { isChatActive: boolean }) => {
   return (
-    <div className="bg-animation">
+    <div className={clsx('bg-animation', isChatActive && 'chat-active')}>
       <div className="bg-orb bg-orb-1" />
       <div className="bg-orb bg-orb-2" />
       <div className="bg-orb bg-orb-3" />
@@ -79,9 +81,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const App = () => {
+  const { messages, currentSession } = useChatStore();
+  const isChatActive = !!currentSession && messages.length > 0;
+
   return (
     <div className="min-h-screen relative">
-      <BackgroundAnimation />
+      <BackgroundAnimation isChatActive={isChatActive} />
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/login" element={<LoginPage />} />

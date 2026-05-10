@@ -223,4 +223,9 @@ async def process_message_consolidated(user_id: str, session_id: str, content: s
     updated_user_dict = updated_user.model_dump()
     updated_user_dict["id"] = str(updated_user.id)
 
-    return {"message": assistant_msg, "session": updated_session_dict, "user": updated_user_dict}
+    return {
+        "message": assistant_msg,
+        "session": updated_session_dict,
+        "user": updated_user_dict,
+        "detected_agent_type": llm_data.get("detected_agent_type"),
+    }

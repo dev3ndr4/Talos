@@ -104,6 +104,7 @@ CRITICAL: You MUST return your final response as a JSON object with the followin
   "reasoning_trace": "A brief explanation of your thought process",
   "chat_summary_update": "A concise summary of this conversation including key facts",
   "user_profile_update": "A summary of the user profile including any new long-term facts learned",
+  "detected_agent_type": "coding" | "knowledge" | "comms" | "simple" (OPTIONAL: Only include if you detect a clear shift in intent or performed a specialized task),
   "email_draft": {{
     "to": "recipient@example.com (optional)",
     "subject": "Email subject",
