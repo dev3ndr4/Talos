@@ -1,5 +1,7 @@
-from pydantic_settings import BaseSettings
 import os
+
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Talos"
@@ -16,5 +18,6 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
+
 
 settings = Settings()

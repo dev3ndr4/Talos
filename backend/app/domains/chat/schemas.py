@@ -1,25 +1,32 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
 from datetime import datetime
+
+from pydantic import BaseModel
+
 from app.domains.auth.schemas import UserResponse
 
+
 class MessageBase(BaseModel):
-    role: str # "user" or "assistant"
+    role: str  # "user" or "assistant"
     content: str
-    reasoning_trace: Optional[str] = None
+    reasoning_trace: str | None = None
+
 
 class MessageCreate(BaseModel):
     content: str
+
 
 class MessageResponse(MessageBase):
     id: str
     created_at: datetime
 
+
 class ChatSessionBase(BaseModel):
     title: str
 
+
 class ChatSessionCreate(ChatSessionBase):
     pass
+
 
 class ChatSessionResponse(ChatSessionBase):
     id: str
@@ -30,6 +37,7 @@ class ChatSessionResponse(ChatSessionBase):
 
     class Config:
         from_attributes = True
+
 
 class ConsolidatedMessageResponse(BaseModel):
     message: MessageResponse

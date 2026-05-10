@@ -1,10 +1,11 @@
-import litellm
 from app.core.config import settings
+
 
 class CommsAgent:
     """
     Autonomous agent responsible for inbox triage and drafting.
     """
+
     def __init__(self):
         self.name = "Talos Comms Agent"
         self.model = settings.LLM_MODEL

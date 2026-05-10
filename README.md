@@ -14,11 +14,11 @@ docker-compose up --build
 
 Talos uses a modular, scalable architecture to ensure security and maintainability:
 
-*   **Frontend:** React (Vite) using **Feature-Sliced Design (FSD)**.
-*   **Backend:** FastAPI using **Domain-Driven Design (Feature-Based)**.
-*   **Database:** MongoDB for unstructured data and agent memory.
-*   **Sandbox:** Isolated Docker sidecar for safe code execution.
-*   **LLM Gateway:** LiteLLM for easy switching between models (Gemini, GPT-4, etc.).
+- **Frontend:** React (Vite) using **Feature-Sliced Design (FSD)**.
+- **Backend:** FastAPI using **Domain-Driven Design (Feature-Based)**.
+- **Database:** MongoDB for unstructured data and agent memory.
+- **Sandbox:** Isolated Docker sidecar for safe code execution.
+- **LLM Gateway:** LiteLLM for easy switching between models (Gemini, GPT-4, etc.).
 
 ## Repository Structure
 
@@ -34,7 +34,7 @@ talos/
 
 ## Documentation
 
-*   [Design System](./DESIGN.md) - UI/UX standards and AI interaction patterns.
-*   [Frontend README](./frontend/README.md)
-*   [Backend README](./backend/README.md)
-*   [Sandbox README](./sandbox/README.md)
+- [Design System](./DESIGN.md) - UI/UX standards and AI interaction patterns.
+- [Frontend README](./frontend/README.md)
+- [Backend README](./backend/README.md)
+- [Sandbox README](./sandbox/README.md)

@@ -37,7 +37,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   fetchSessions: async () => {
     const { data } = await api.get('/chat/sessions');
     set({ sessions: data });
-    
+
     // Try to restore session from localStorage
     const savedSessionId = localStorage.getItem('talos_current_session_id');
     if (savedSessionId && !get().currentSession) {
@@ -81,7 +81,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const { data } = await api.post(`/chat/sessions/${currentSession.id}/messages`, { content });
-      
+
       // Data is now ConsolidatedMessageResponse: { message: Message, session: ChatSession, user: User }
       const { message, session, user } = data;
 
@@ -90,9 +90,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       // Update Sessions List and Current Session
       set((state) => ({
-        messages: state.messages.map(m => m.id === tempUserMsg.id ? tempUserMsg : m).concat(message),
+        messages: state.messages
+          .map((m) => (m.id === tempUserMsg.id ? tempUserMsg : m))
+          .concat(message),
         currentSession: session,
-        sessions: state.sessions.map(s => s.id === session.id ? session : s)
+        sessions: state.sessions.map((s) => (s.id === session.id ? session : s)),
       }));
     } catch (error) {
       console.error('Failed to send message:', error);

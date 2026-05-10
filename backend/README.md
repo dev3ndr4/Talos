@@ -11,9 +11,9 @@ The backend is organized into "domains," each representing a core functional tra
 - `app/core/`: Global infrastructure (DB clients, LLM configuration via LiteLLM).
 - `app/shared/`: Cross-cutting concerns, shared Pydantic schemas, and common utilities.
 - `app/domains/`:
-    - `knowledge/`: RAG logic, MongoDB ingestion, and "Self-Healing" background tasks.
-    - `comms/`: Inbox triage, high-context drafting, and tool routing.
-    - `coding/`: Autonomous code generation and sandbox execution management.
+  - `knowledge/`: RAG logic, MongoDB ingestion, and "Self-Healing" background tasks.
+  - `comms/`: Inbox triage, high-context drafting, and tool routing.
+  - `coding/`: Autonomous code generation and sandbox execution management.
 
 ## Setup & Development
 

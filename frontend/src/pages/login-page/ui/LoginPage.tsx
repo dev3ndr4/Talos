@@ -9,7 +9,10 @@ import { LayoutGrid, ArrowRight, ShieldCheck, Zap, Globe } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(72, 'Password must be at most 72 characters'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(72, 'Password must be at most 72 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -42,130 +45,299 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-surface overflow-hidden">
+    <div className="auth-layout">
       {/* Left side: Branding & Visuals */}
-      <div className="hidden lg:flex lg:w-1/2 bg-text-strong relative p-12 flex-col justify-between overflow-hidden">
-        {/* Abstract background pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#10a37f_1px,transparent_1px)] [background-size:32px_32px]" />
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-[100px]" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
+      <div className="auth-branding">
+        <div className="auth-branding-pattern">
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'radial-gradient(var(--color-primary) 1px, transparent 1px)',
+              backgroundSize: '32px 32px',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '-6rem',
+              right: '-6rem',
+              width: '24rem',
+              height: '24rem',
+              backgroundColor: 'rgba(16, 163, 127, 0.2)',
+              borderRadius: 'var(--radius-full)',
+              filter: 'blur(100px)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-6rem',
+              left: '-6rem',
+              width: '24rem',
+              height: '24rem',
+              backgroundColor: 'rgba(16, 163, 127, 0.1)',
+              borderRadius: 'var(--radius-full)',
+              filter: 'blur(100px)',
+            }}
+          />
         </div>
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 text-white mb-12">
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+        <div className="auth-branding-content">
+          <div className="flex items-center gap-3 mb-12" style={{ color: 'white' }}>
+            <div
+              style={{
+                height: '2.5rem',
+                width: '2.5rem',
+                backgroundColor: 'var(--color-primary)',
+                borderRadius: 'var(--radius-lg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 15px -3px rgba(16, 163, 127, 0.2)',
+              }}
+            >
               <LayoutGrid size={20} strokeWidth={2.5} />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Talos</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.025em' }}>
+              Talos
+            </span>
           </div>
 
-          <h1 className="text-5xl font-bold text-white leading-tight mb-6">
+          <h1
+            style={{
+              fontSize: '3rem',
+              fontWeight: 700,
+              color: 'white',
+              lineHeight: 1.1,
+              marginBottom: '1.5rem',
+            }}
+          >
             Architecting the <br />
-            <span className="text-primary italic">next generation</span> <br />
+            <span style={{ color: 'var(--color-primary)', fontStyle: 'italic' }}>
+              next generation
+            </span>{' '}
+            <br />
             of business AI.
           </h1>
-          <p className="text-text-subtle text-lg max-w-md font-medium">
-            Join thousands of teams using Talos to orchestrate multi-agent workflows and accelerate their development cycle.
+          <p
+            style={{
+              color: 'var(--color-text-subtle)',
+              fontSize: '1.125rem',
+              maxWidth: '28rem',
+              fontWeight: 500,
+            }}
+          >
+            Join thousands of teams using Talos to orchestrate multi-agent workflows and accelerate
+            their development cycle.
           </p>
         </div>
 
-        <div className="relative z-10 grid grid-cols-2 gap-8">
-          <div className="space-y-2">
-             <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary mb-3">
-                <ShieldCheck size={18} />
-             </div>
-             <h3 className="text-white font-semibold">Secure by Design</h3>
-             <p className="text-text-subtle text-xs leading-relaxed">Enterprise-grade encryption and isolated sandboxes for every task.</p>
+        <div
+          className="auth-branding-content flex gap-8"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+        >
+          <div className="flex flex-col gap-2">
+            <div
+              style={{
+                height: '2rem',
+                width: '2rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--color-primary)',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <ShieldCheck size={18} />
+            </div>
+            <h3 style={{ color: 'white', fontWeight: 600 }}>Secure by Design</h3>
+            <p style={{ color: 'var(--color-text-subtle)', fontSize: '0.75rem', lineHeight: 1.5 }}>
+              Enterprise-grade encryption and isolated sandboxes for every task.
+            </p>
           </div>
-          <div className="space-y-2">
-             <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary mb-3">
-                <Zap size={18} />
-             </div>
-             <h3 className="text-white font-semibold">Lightning Fast</h3>
-             <p className="text-text-subtle text-xs leading-relaxed">Optimized runtime for low-latency responses and high throughput.</p>
+          <div className="flex flex-col gap-2">
+            <div
+              style={{
+                height: '2rem',
+                width: '2rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--color-primary)',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <Zap size={18} />
+            </div>
+            <h3 style={{ color: 'white', fontWeight: 600 }}>Lightning Fast</h3>
+            <p style={{ color: 'var(--color-text-subtle)', fontSize: '0.75rem', lineHeight: 1.5 }}>
+              Optimized runtime for low-latency responses and high throughput.
+            </p>
           </div>
         </div>
 
-        <div className="absolute bottom-12 right-12 z-10">
-           <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <Globe size={12} />
-              <span>Nodes: 2,841 Active</span>
-           </div>
+        <div style={{ position: 'absolute', bottom: '3rem', right: '3rem', zIndex: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontSize: '10px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+            }}
+          >
+            <Globe size={12} />
+            <span>Nodes: 2,841 Active</span>
+          </div>
         </div>
       </div>
 
       {/* Right side: Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 lg:px-20 py-12 relative">
-        {/* Subtle grid for the form side too */}
-        <div className="absolute inset-0 opacity-100 pointer-events-none bg-grid-pattern" />
+      <div className="auth-form-side">
+        <div
+          className="absolute inset-0 bg-grid-pattern"
+          style={{ opacity: 1, pointerEvents: 'none' }}
+        />
 
-        <div className="w-full max-w-sm relative">
-          <div className="mb-10 lg:hidden">
-            <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4">
+        <div className="auth-form-container">
+          <div style={{ marginBottom: '2.5rem' }} className="lg:hidden">
+            <div
+              style={{
+                height: '3rem',
+                width: '3rem',
+                backgroundColor: 'var(--color-primary)',
+                borderRadius: 'var(--radius-lg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                marginBottom: '1rem',
+              }}
+            >
               <LayoutGrid size={24} strokeWidth={2.5} />
             </div>
           </div>
 
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-text-strong mb-2">Sign in to Talos</h2>
-            <p className="text-text-subtle font-medium">Enter your credentials to access your workspace.</p>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h2
+              style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-strong)',
+                marginBottom: '0.5rem',
+              }}
+            >
+              Sign in to Talos
+            </h2>
+            <p style={{ color: 'var(--color-text-subtle)', fontWeight: 500 }}>
+              Enter your credentials to access your workspace.
+            </p>
           </div>
 
           {successMessage && (
-            <div className="mb-6 rounded-xl bg-primary/10 border border-primary/20 p-4 text-sm text-primary font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <div className="auth-alert auth-alert-success">
               <ShieldCheck size={18} />
               {successMessage}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Email address</label>
+          <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-4">
+              <div className="input-group">
+                <label className="form-label">Email address</label>
                 <input
                   {...register('email')}
                   type="email"
-                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
+                  className="form-input"
                   placeholder="name@company.com"
                 />
-                {errors.email && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.email.message}</p>}
+                {errors.email && <p className="form-error">{errors.email.message}</p>}
               </div>
-              <div>
-                <div className="flex justify-between items-center mb-2 px-1">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle">Password</label>
-                  <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">Forgot?</a>
+              <div className="input-group">
+                <div
+                  className="flex justify-between items-center"
+                  style={{ marginBottom: '0.5rem', padding: '0 var(--spacing-1)' }}
+                >
+                  <label className="form-label" style={{ padding: 0, margin: 0 }}>
+                    Password
+                  </label>
+                  <a
+                    href="#"
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: 'var(--color-primary)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Forgot?
+                  </a>
                 </div>
                 <input
                   {...register('password')}
                   type="password"
-                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
+                  className="form-input"
                   placeholder="••••••••"
                 />
-                {errors.password && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.password.message}</p>}
+                {errors.password && <p className="form-error">{errors.password.message}</p>}
               </div>
             </div>
 
             {errors.root && (
-              <div className="rounded-xl bg-error/5 border border-error/10 p-3 text-xs text-error font-medium text-center">
-                {errors.root.message}
-              </div>
+              <div className="auth-alert auth-alert-error">{errors.root.message}</div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-text-strong py-3 text-sm font-bold text-white shadow-md hover:bg-primary transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="btn w-full"
+              style={{
+                backgroundColor: 'var(--color-text-strong)',
+                color: 'white',
+                padding: '0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              }}
             >
               <span>{isSubmitting ? 'Authenticating...' : 'Sign in to workspace'}</span>
-              {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              {!isSubmitting && <ArrowRight size={16} />}
             </button>
           </form>
 
-          <div className="mt-12 pt-8 border-t border-muted">
-             <p className="text-center text-sm text-text-subtle font-medium">
-               Don't have an account yet? <Link to="/register" className="text-primary font-bold hover:underline">Create an account</Link>
-             </p>
+          <div
+            style={{
+              marginTop: '3rem',
+              paddingTop: '2rem',
+              borderTop: '1px solid var(--color-muted-subtle)',
+            }}
+          >
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: '0.875rem',
+                color: 'var(--color-text-subtle)',
+                fontWeight: 500,
+              }}
+            >
+              Don&apos;t have an account yet?{' '}
+              <Link
+                to="/register"
+                style={{ color: 'var(--color-primary)', fontWeight: 700, textDecoration: 'none' }}
+              >
+                Create an account
+              </Link>
+            </p>
           </div>
         </div>
       </div>

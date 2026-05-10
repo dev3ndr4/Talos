@@ -1,10 +1,11 @@
-import litellm
 from app.core.config import settings
+
 
 class KnowledgeAgent:
     """
     Autonomous agent responsible for self-healing and RAG memory management.
     """
+
     def __init__(self):
         self.name = "Talos Knowledge Brain"
         self.model = settings.LLM_MODEL

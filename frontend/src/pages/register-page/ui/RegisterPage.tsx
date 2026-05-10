@@ -4,16 +4,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '@/shared/api/base';
 import { useNavigate, Link } from 'react-router-dom';
-import { LayoutGrid, ArrowRight, ShieldCheck, Zap, Globe, CheckCircle2 } from 'lucide-react';
+import { LayoutGrid, ArrowRight, Globe, CheckCircle2 } from 'lucide-react';
 
-const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(72, 'Password must be at most 72 characters'),
-  confirmPassword: z.string().min(6, 'Please confirm your password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters')
+      .max(72, 'Password must be at most 72 characters'),
+    confirmPassword: z.string().min(6, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -43,128 +48,251 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-surface overflow-hidden">
+    <div className="auth-layout">
       {/* Left side: Branding & Visuals */}
-      <div className="hidden lg:flex lg:w-1/2 bg-text-strong relative p-12 flex-col justify-between overflow-hidden">
-        {/* Abstract background pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#10a37f_1px,transparent_1px)] [background-size:32px_32px]" />
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-[100px]" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
+      <div className="auth-branding">
+        <div className="auth-branding-pattern">
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'radial-gradient(var(--color-primary) 1px, transparent 1px)',
+              backgroundSize: '32px 32px',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '-6rem',
+              right: '-6rem',
+              width: '24rem',
+              height: '24rem',
+              backgroundColor: 'rgba(16, 163, 127, 0.2)',
+              borderRadius: 'var(--radius-full)',
+              filter: 'blur(100px)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-6rem',
+              left: '-6rem',
+              width: '24rem',
+              height: '24rem',
+              backgroundColor: 'rgba(16, 163, 127, 0.1)',
+              borderRadius: 'var(--radius-full)',
+              filter: 'blur(100px)',
+            }}
+          />
         </div>
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 text-white mb-12">
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+        <div className="auth-branding-content">
+          <div className="flex items-center gap-3 mb-12" style={{ color: 'white' }}>
+            <div
+              style={{
+                height: '2.5rem',
+                width: '2.5rem',
+                backgroundColor: 'var(--color-primary)',
+                borderRadius: 'var(--radius-lg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 15px -3px rgba(16, 163, 127, 0.2)',
+              }}
+            >
               <LayoutGrid size={20} strokeWidth={2.5} />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Talos</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.025em' }}>
+              Talos
+            </span>
           </div>
 
-          <h1 className="text-5xl font-bold text-white leading-tight mb-6">
+          <h1
+            style={{
+              fontSize: '3rem',
+              fontWeight: 700,
+              color: 'white',
+              lineHeight: 1.1,
+              marginBottom: '1.5rem',
+            }}
+          >
             Start your <br />
-            <span className="text-primary italic">AI-driven</span> <br />
+            <span style={{ color: 'var(--color-primary)', fontStyle: 'italic' }}>
+              AI-driven
+            </span>{' '}
+            <br />
             journey today.
           </h1>
-          <p className="text-text-subtle text-lg max-w-md font-medium">
-            Create an account to unlock the full potential of multi-agent orchestration and specialized business domains.
+          <p
+            style={{
+              color: 'var(--color-text-subtle)',
+              fontSize: '1.125rem',
+              maxWidth: '28rem',
+              fontWeight: 500,
+            }}
+          >
+            Create an account to unlock the full potential of multi-agent orchestration and
+            specialized business domains.
           </p>
         </div>
 
-        <div className="relative z-10 space-y-6">
-           <div className="flex items-center gap-4 text-white/80">
-              <CheckCircle2 size={20} className="text-primary" />
-              <span className="font-medium">Unlimited Chat History</span>
-           </div>
-           <div className="flex items-center gap-4 text-white/80">
-              <CheckCircle2 size={20} className="text-primary" />
-              <span className="font-medium">Advanced Coding Sandbox</span>
-           </div>
-           <div className="flex items-center gap-4 text-white/80">
-              <CheckCircle2 size={20} className="text-primary" />
-              <span className="font-medium">Multi-domain Agent Access</span>
-           </div>
+        <div className="auth-branding-content flex flex-col gap-6">
+          <div className="flex items-center gap-4" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+            <CheckCircle2 size={20} className="text-primary" />
+            <span style={{ fontWeight: 500 }}>Unlimited Chat History</span>
+          </div>
+          <div className="flex items-center gap-4" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+            <CheckCircle2 size={20} className="text-primary" />
+            <span style={{ fontWeight: 500 }}>Advanced Coding Sandbox</span>
+          </div>
+          <div className="flex items-center gap-4" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+            <CheckCircle2 size={20} className="text-primary" />
+            <span style={{ fontWeight: 500 }}>Multi-domain Agent Access</span>
+          </div>
         </div>
 
-        <div className="absolute bottom-12 right-12 z-10">
-           <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <Globe size={12} />
-              <span>Nodes: 2,841 Active</span>
-           </div>
+        <div style={{ position: 'absolute', bottom: '3rem', right: '3rem', zIndex: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontSize: '10px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+            }}
+          >
+            <Globe size={12} />
+            <span>Nodes: 2,841 Active</span>
+          </div>
         </div>
       </div>
 
       {/* Right side: Register Form */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 lg:px-20 py-12 relative">
-        {/* Subtle grid */}
-        <div className="absolute inset-0 opacity-100 pointer-events-none bg-grid-pattern" />
+      <div className="auth-form-side">
+        <div
+          className="absolute inset-0 bg-grid-pattern"
+          style={{ opacity: 1, pointerEvents: 'none' }}
+        />
 
-        <div className="w-full max-w-sm relative">
-          <div className="mb-10 lg:hidden">
-            <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4">
+        <div className="auth-form-container">
+          <div style={{ marginBottom: '2.5rem' }} className="lg:hidden">
+            <div
+              style={{
+                height: '3rem',
+                width: '3rem',
+                backgroundColor: 'var(--color-primary)',
+                borderRadius: 'var(--radius-lg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                marginBottom: '1rem',
+              }}
+            >
               <LayoutGrid size={24} strokeWidth={2.5} />
             </div>
           </div>
 
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-text-strong mb-2">Create an account</h2>
-            <p className="text-text-subtle font-medium">Join the Talos community today.</p>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h2
+              style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-strong)',
+                marginBottom: '0.5rem',
+              }}
+            >
+              Create an account
+            </h2>
+            <p style={{ color: 'var(--color-text-subtle)', fontWeight: 500 }}>
+              Join the Talos community today.
+            </p>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Email address</label>
+          <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-4">
+              <div className="input-group">
+                <label className="form-label">Email address</label>
                 <input
                   {...register('email')}
                   type="email"
-                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
+                  className="form-input"
                   placeholder="name@company.com"
                 />
-                {errors.email && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.email.message}</p>}
+                {errors.email && <p className="form-error">{errors.email.message}</p>}
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Password</label>
+              <div className="input-group">
+                <label className="form-label">Password</label>
                 <input
                   {...register('password')}
                   type="password"
-                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
+                  className="form-input"
                   placeholder="••••••••"
                 />
-                {errors.password && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.password.message}</p>}
+                {errors.password && <p className="form-error">{errors.password.message}</p>}
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-text-subtle mb-2 px-1">Confirm Password</label>
+              <div className="input-group">
+                <label className="form-label">Confirm Password</label>
                 <input
                   {...register('confirmPassword')}
                   type="password"
-                  className="block w-full rounded-xl border border-muted bg-muted/30 px-4 py-3 text-text-strong transition-all focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/5 placeholder:text-text-subtle/40 shadow-sm"
+                  className="form-input"
                   placeholder="••••••••"
                 />
-                {errors.confirmPassword && <p className="mt-1.5 text-xs text-error font-medium px-1">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && (
+                  <p className="form-error">{errors.confirmPassword.message}</p>
+                )}
               </div>
             </div>
 
             {errors.root && (
-              <div className="rounded-xl bg-error/5 border border-error/10 p-3 text-xs text-error font-medium text-center">
-                {errors.root.message}
-              </div>
+              <div className="auth-alert auth-alert-error">{errors.root.message}</div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-text-strong py-3 text-sm font-bold text-white shadow-md hover:bg-primary transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="btn w-full"
+              style={{
+                backgroundColor: 'var(--color-text-strong)',
+                color: 'white',
+                padding: '0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              }}
             >
               <span>{isSubmitting ? 'Creating account...' : 'Create account'}</span>
-              {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              {!isSubmitting && <ArrowRight size={16} />}
             </button>
           </form>
 
-          <div className="mt-12 pt-8 border-t border-muted">
-             <p className="text-center text-sm text-text-subtle font-medium">
-               Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Sign in instead</Link>
-             </p>
+          <div
+            style={{
+              marginTop: '3rem',
+              paddingTop: '2rem',
+              borderTop: '1px solid var(--color-muted-subtle)',
+            }}
+          >
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: '0.875rem',
+                color: 'var(--color-text-subtle)',
+                fontWeight: 500,
+              }}
+            >
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                style={{ color: 'var(--color-primary)', fontWeight: 700, textDecoration: 'none' }}
+              >
+                Sign in instead
+              </Link>
+            </p>
           </div>
         </div>
       </div>

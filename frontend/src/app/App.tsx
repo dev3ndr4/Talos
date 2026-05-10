@@ -8,9 +8,9 @@ import { ChatWindow } from '@/features/chat/ui/ChatWindow';
 
 const Dashboard = () => {
   return (
-    <div className="flex h-screen bg-surface">
+    <div className="app-container">
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-hidden relative">
+      <main className="main-content">
         <ChatWindow />
       </main>
     </div>
@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export const App = () => {
   return (
-    <div className="min-h-screen bg-bg-base text-text-strong font-sans antialiased">
+    <div className="min-h-screen">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

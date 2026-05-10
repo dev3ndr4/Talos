@@ -1,10 +1,11 @@
-import litellm
 from app.core.config import settings
+
 
 class CodingAgent:
     """
     Autonomous agent responsible for code generation and self-correction.
     """
+
     def __init__(self):
         self.name = "Talos Coding Agent"
         self.model = settings.LLM_MODEL

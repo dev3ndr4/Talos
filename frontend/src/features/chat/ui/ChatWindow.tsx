@@ -24,38 +24,59 @@ export const ChatWindow = () => {
 
   if (!currentSession) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-center px-4">
-        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6">
+      <div className="chat-empty-state">
+        <div className="empty-state-icon">
           <Bot size={32} strokeWidth={1.5} />
         </div>
-        <h2 className="text-xl font-semibold text-text-strong mb-2">Welcome to Talos</h2>
-        <p className="text-sm text-text-subtle max-w-sm">
-          Select a conversation from the sidebar or start a new one to begin your multi-agent workflow.
+        <h2
+          style={{
+            fontSize: '1.25rem',
+            fontWeight: 600,
+            color: 'var(--color-text-strong)',
+            marginBottom: 'var(--spacing-2)',
+          }}
+        >
+          Welcome to Talos
+        </h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--color-text-subtle)', maxWidth: '24rem' }}>
+          Select a conversation from the sidebar or start a new one to begin your multi-agent
+          workflow.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col relative bg-surface">
-      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        <div className="max-w-3xl mx-auto w-full px-4 py-8 space-y-8">
+    <div className="chat-window">
+      <div className="chat-messages-container" ref={scrollRef}>
+        <div className="chat-messages-inner">
           {messages.length === 0 && (
-             <div className="text-center py-20">
-                <h1 className="text-3xl font-bold text-text-strong mb-4">How can I help you today?</h1>
-                <p className="text-text-subtle">Talos is ready to assist with coding, knowledge, and communication.</p>
-             </div>
+            <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+              <h1
+                style={{
+                  fontSize: '1.875rem',
+                  fontWeight: 700,
+                  color: 'var(--color-text-strong)',
+                  marginBottom: 'var(--spacing-4)',
+                }}
+              >
+                How can I help you today?
+              </h1>
+              <p style={{ color: 'var(--color-text-subtle)' }}>
+                Talos is ready to assist with coding, knowledge, and communication.
+              </p>
+            </div>
           )}
           {messages.map((msg) => (
             <MessageItem key={msg.id} message={msg} />
           ))}
-          <div className="h-32" /> {/* Bottom spacing for input */}
+          <div style={{ height: '8rem' }} /> {/* Bottom spacing for input */}
         </div>
       </div>
-      
-      <div className="absolute bottom-0 left-0 right-0 bg-surface/80 backdrop-blur-md border-t border-muted/50 pb-6 pt-4 px-4">
-        <div className="max-w-3xl mx-auto relative group">
-          <div className="relative flex items-end gap-2 bg-surface border border-muted shadow-sm rounded-xl p-2 transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20">
+
+      <div className="chat-input-container">
+        <div className="chat-input-wrapper">
+          <div className="chat-input-box">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -67,20 +88,14 @@ export const ChatWindow = () => {
               }}
               placeholder="Message Talos..."
               rows={1}
-              className="flex-1 bg-transparent border-none focus:ring-0 text-text-strong py-3 px-4 resize-none max-h-60"
+              className="chat-textarea"
               style={{ height: 'auto' }}
             />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="bg-text-strong text-white p-2.5 rounded-lg hover:bg-primary transition-all disabled:opacity-20 disabled:hover:bg-text-strong mb-0.5 mr-0.5"
-            >
+            <button onClick={handleSend} disabled={!input.trim()} className="send-btn">
               <Send size={18} strokeWidth={2} />
             </button>
           </div>
-          <p className="text-[10px] text-center mt-3 text-text-subtle font-medium">
-            Talos can make mistakes. Check important info.
-          </p>
+          <p className="chat-disclaimer">Talos can make mistakes. Check important info.</p>
         </div>
       </div>
     </div>
@@ -92,40 +107,31 @@ const MessageItem = ({ message }: { message: Message }) => {
   const [showTrace, setShowTrace] = useState(false);
 
   return (
-    <div className={clsx("flex gap-5 group", isAssistant ? "items-start" : "items-start flex-row-reverse")}>
-      <div className={clsx(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
-        isAssistant 
-          ? "bg-primary text-white border-primary shadow-sm" 
-          : "bg-surface border-muted text-text-strong group-hover:border-primary/30"
-      )}>
+    <div className={clsx('message-item', isAssistant ? 'assistant' : 'user')}>
+      <div className="message-avatar">
         {isAssistant ? <Bot size={18} strokeWidth={1.5} /> : <User size={18} strokeWidth={1.5} />}
       </div>
-      
-      <div className={clsx("flex flex-col gap-2 min-w-0 flex-1", !isAssistant && "items-end")}>
-        <div className={clsx(
-          "text-sm leading-relaxed",
-          isAssistant ? "text-text-strong pr-10" : "bg-muted/50 border border-muted/50 rounded-xl px-5 py-3 text-text-strong inline-block shadow-sm"
-        )}>
-          <ReactMarkdown 
+
+      <div className="message-body">
+        <div className="message-content">
+          <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-              h1: ({ children }) => <h1 className="text-xl font-bold mb-4 mt-6 first:mt-0">{children}</h1>,
-              h2: ({ children }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0">{children}</h2>,
-              h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-4 first:mt-0">{children}</h3>,
-              ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
-              li: ({ children }) => <li className="mb-1">{children}</li>,
+              // These components use styles defined in index.css under .message-content
+              p: ({ children }) => <p>{children}</p>,
+              h1: ({ children }) => <h1>{children}</h1>,
+              h2: ({ children }) => <h2>{children}</h2>,
+              h3: ({ children }) => <h3>{children}</h3>,
+              ul: ({ children }) => <ul>{children}</ul>,
+              ol: ({ children }) => <ol>{children}</ol>,
+              li: ({ children }) => <li>{children}</li>,
               code: ({ className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || '');
                 const isInline = !match;
                 return isInline ? (
-                  <code className="bg-muted/50 rounded px-1.5 py-0.5 font-mono text-[0.9em] border border-muted" {...props}>
-                    {children}
-                  </code>
+                  <code {...props}>{children}</code>
                 ) : (
-                  <pre className="bg-muted/30 border border-muted/50 rounded-xl p-4 overflow-x-auto my-4 font-mono text-[13px] leading-relaxed">
+                  <pre>
                     <code className={className} {...props}>
                       {children}
                     </code>
@@ -133,22 +139,67 @@ const MessageItem = ({ message }: { message: Message }) => {
                 );
               },
               blockquote: ({ children }) => (
-                <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-text-subtle">
+                <blockquote
+                  style={{
+                    borderLeft: '4px solid rgba(16, 163, 127, 0.3)',
+                    paddingLeft: '1rem',
+                    fontStyle: 'italic',
+                    margin: '1rem 0',
+                    color: 'var(--color-text-subtle)',
+                  }}
+                >
                   {children}
                 </blockquote>
               ),
               table: ({ children }) => (
-                <div className="overflow-x-auto my-4 border border-muted rounded-xl">
-                  <table className="w-full text-left border-collapse">{children}</table>
+                <div
+                  style={{
+                    overflowX: 'auto',
+                    margin: '1rem 0',
+                    border: '1px solid var(--color-muted-subtle)',
+                    borderRadius: 'var(--radius-lg)',
+                  }}
+                >
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    {children}
+                  </table>
                 </div>
               ),
-              th: ({ children }) => <th className="bg-muted/30 p-2 border-b border-muted font-bold text-[13px]">{children}</th>,
-              td: ({ children }) => <td className="p-2 border-b border-muted text-[13px]">{children}</td>,
+              th: ({ children }) => (
+                <th
+                  style={{
+                    backgroundColor: 'rgba(244, 244, 245, 0.3)',
+                    padding: '0.5rem',
+                    borderBottom: '1px solid var(--color-muted-subtle)',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                  }}
+                >
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td
+                  style={{
+                    padding: '0.5rem',
+                    borderBottom: '1px solid var(--color-muted-subtle)',
+                    fontSize: '13px',
+                  }}
+                >
+                  {children}
+                </td>
+              ),
               a: ({ children, href }) => (
-                <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                <a
+                  href={href}
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+                >
                   {children}
                 </a>
-              )
+              ),
             }}
           >
             {message.content}
@@ -156,22 +207,23 @@ const MessageItem = ({ message }: { message: Message }) => {
         </div>
 
         {isAssistant && message.reasoning_trace && (
-          <div className="w-full mt-2">
+          <div className="w-full" style={{ marginTop: 'var(--spacing-2)' }}>
             <button
               onClick={() => setShowTrace(!showTrace)}
-              className={clsx(
-                "flex items-center gap-1 text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md transition-all",
-                showTrace ? "bg-accent/20 text-accent" : "text-text-subtle hover:text-primary bg-muted/30"
-              )}
+              className={clsx('reasoning-btn', showTrace ? 'active' : 'inactive')}
             >
               {showTrace ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
               Reasoning Trace
             </button>
             {showTrace && (
-              <div className="mt-3 rounded-xl bg-muted/30 border border-muted/50 p-4 text-[13px] font-mono text-text-subtle leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-muted/50">
-                   <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
-                   <span className="text-[10px] font-bold uppercase tracking-tighter">Analysis Log</span>
+              <div className="trace-container">
+                <div className="trace-header">
+                  <div className="trace-indicator" />
+                  <span
+                    style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
+                  >
+                    Analysis Log
+                  </span>
                 </div>
                 {message.reasoning_trace}
               </div>
@@ -182,4 +234,3 @@ const MessageItem = ({ message }: { message: Message }) => {
     </div>
   );
 };
-
