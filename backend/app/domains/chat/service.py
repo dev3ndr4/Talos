@@ -58,8 +58,6 @@ from app.domains.chat.agent import ChatAgent
 
 chat_agent = ChatAgent()
 
-async def create_chat_session(user_id: str, session_in: ChatSessionCreate):
-...
 async def process_message_consolidated(user_id: str, session_id: str, content: str):
     # 1. Get user and session
     user = await db.users.find_one({"_id": ObjectId(user_id)})
