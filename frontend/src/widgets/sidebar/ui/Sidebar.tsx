@@ -50,13 +50,13 @@ export const Sidebar = () => {
     }
   };
 
-  const onDragStart = (e: React.DragEvent, sessionId: string) => {
+  const onDragStart = (e: React.DragEvent<HTMLButtonElement>, sessionId: string) => {
     setDraggedSessionId(sessionId);
     e.dataTransfer.setData('sessionId', sessionId);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const onDragOverFolder = (e: React.DragEvent, folderId: string) => {
+  const onDragOverFolder = (e: React.DragEvent<HTMLButtonElement>, folderId: string) => {
     e.preventDefault();
     setDragOverFolderId(folderId);
   };
@@ -65,7 +65,7 @@ export const Sidebar = () => {
     setDragOverFolderId(null);
   };
 
-  const onDropOnFolder = (e: React.DragEvent, folderId: string) => {
+  const onDropOnFolder = (e: React.DragEvent<HTMLButtonElement>, folderId: string) => {
     e.preventDefault();
     const sessionId = e.dataTransfer.getData('sessionId');
     if (sessionId) {
@@ -86,7 +86,7 @@ export const Sidebar = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -10 }}
       draggable
-      onDragStart={(e) => onDragStart(e, session.id)}
+      onDragStart={(e) => onDragStart(e as any, session.id)}
       onDragEnd={() => setDraggedSessionId(null)}
       onClick={() => setCurrentSession(session)}
       className={clsx(
