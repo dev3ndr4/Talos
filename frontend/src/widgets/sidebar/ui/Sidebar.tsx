@@ -1,89 +1,60 @@
 import React, { useEffect } from 'react';
-import { useChatStore, AgentType } from '@/entities/chat/model/store';
+import { useChatStore } from '@/entities/chat/model/store';
 import { useUserStore } from '@/entities/user/model/store';
-import {
-  Plus,
-  MessageSquare,
-  LogOut,
-  User as UserIcon,
-  Code,
-  Library,
-  MessageCircle,
-  LayoutGrid,
-} from 'lucide-react';
+import { Plus, MessageSquare, LogOut, User as UserIcon, Search } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Sidebar = () => {
-  const {
-    sessions,
-    currentSession,
-    fetchSessions,
-    createSession,
-    setCurrentSession,
-    activeAgent,
-    setActiveAgent,
-  } = useChatStore();
+  const { sessions, currentSession, fetchSessions, createSession, setCurrentSession } =
+    useChatStore();
   const { user, logout } = useUserStore();
 
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
-  const agents: { type: AgentType; icon: React.ReactNode; label: string }[] = [
-    { type: 'coding', icon: <Code size={20} strokeWidth={1.5} />, label: 'Coding' },
-    { type: 'knowledge', icon: <Library size={20} strokeWidth={1.5} />, label: 'Knowledge' },
-    { type: 'comms', icon: <MessageCircle size={20} strokeWidth={1.5} />, label: 'Comms' },
-  ];
-
   return (
-    <>
-      {/* Navigation Rail - High-level Domain Switching */}
-      <nav className="nav-rail">
-        <div className="nav-rail-logo">
-          <LayoutGrid size={24} strokeWidth={2.5} />
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="flex items-center gap-2 mb-6 px-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">
+            T
+          </div>
+          <span className="font-bold text-lg tracking-tight">Talos</span>
         </div>
 
-        <div className="nav-rail-items">
-          {agents.map((agent) => (
-            <button
-              key={agent.type}
-              onClick={() => setActiveAgent(agent.type)}
-              className={clsx('nav-rail-item', activeAgent === agent.type && 'active')}
-            >
-              {agent.icon}
-              <span className="nav-rail-tooltip">{agent.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+        <button
+          onClick={() => createSession(`New Chat ${sessions.length + 1}`)}
+          className="btn btn-primary w-full justify-start gap-3 shadow-md"
+          style={{ padding: 'var(--spacing-3) var(--spacing-4)', borderRadius: 'var(--radius-md)' }}
+        >
+          <Plus size={18} strokeWidth={2.5} />
+          <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>New Chat</span>
+        </button>
+      </div>
 
-      {/* Main Sidebar - Session Management */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <button
-            onClick={() => createSession(`New Chat ${sessions.length + 1}`)}
-            className="btn btn-surface w-full justify-between group"
-            style={{ padding: 'var(--spacing-3) var(--spacing-4)' }}
-          >
-            <div className="flex items-center gap-2">
-              <Plus size={18} strokeWidth={1.5} className="text-primary" />
-              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>New Conversation</span>
-            </div>
-            <span
-              style={{ fontSize: '10px' }}
-              className="text-text-subtle group-hover:text-primary transition-colors"
-            >
-              ⌘N
-            </span>
-          </button>
+      <div className="px-4 mb-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle" size={14} />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            className="w-full bg-white/50 border border-muted-subtle rounded-full py-2 pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          />
         </div>
+      </div>
 
-        <div className="sidebar-content">
-          <div className="sidebar-section-title">Recent Chats</div>
-          <div className="flex flex-col gap-1">
+      <div className="sidebar-content">
+        <div className="sidebar-section-title">Recent Activity</div>
+        <div className="flex flex-col gap-1">
+          <AnimatePresence initial={false}>
             {sessions.map((session) => (
-              <button
+              <motion.button
                 key={session.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
                 onClick={() => setCurrentSession(session)}
                 className={clsx('nav-item', currentSession?.id === session.id && 'active')}
               >
@@ -95,30 +66,35 @@ export const Sidebar = () => {
                     currentSession?.id === session.id ? 'text-primary' : 'text-text-subtle'
                   )}
                 />
-                <span className="truncate flex-1">{session.title}</span>
-                {currentSession?.id === session.id && <div className="active-indicator" />}
-              </button>
+                <span className="truncate flex-1 font-medium">{session.title}</span>
+                {currentSession?.id === session.id && (
+                  <motion.div
+                    layoutId="active-nav-indicator"
+                    className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
+                  />
+                )}
+              </motion.button>
             ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="sidebar-footer">
+        <div className="user-profile-card">
+          <div className="user-avatar">
+            <UserIcon size={16} strokeWidth={1.5} />
+          </div>
+          <div className="user-info">
+            <p className="user-name">{user?.email?.split('@')[0] || 'User'}</p>
+            <p className="user-plan">Pro Member</p>
           </div>
         </div>
 
-        <div className="sidebar-footer">
-          <div className="user-profile-card">
-            <div className="user-avatar">
-              <UserIcon size={16} strokeWidth={1.5} />
-            </div>
-            <div className="user-info">
-              <p className="user-name">{user?.email?.split('@')[0] || 'User'}</p>
-              <p className="user-plan">Free Plan</p>
-            </div>
-          </div>
-
-          <button onClick={logout} className="sign-out-btn">
-            <LogOut size={14} strokeWidth={1.5} />
-            <span>Sign out</span>
-          </button>
-        </div>
-      </aside>
-    </>
+        <button onClick={logout} className="sign-out-btn mt-2">
+          <LogOut size={14} strokeWidth={1.5} />
+          <span>Sign out</span>
+        </button>
+      </div>
+    </aside>
   );
 };

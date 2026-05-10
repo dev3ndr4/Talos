@@ -4,15 +4,30 @@ import { LoginPage } from '@/pages/login-page/ui/LoginPage';
 import { RegisterPage } from '@/pages/register-page/ui/RegisterPage';
 import { useUserStore } from '@/entities/user/model/store';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
+import { Header } from '@/widgets/header/ui/Header';
 import { ChatWindow } from '@/features/chat/ui/ChatWindow';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const BackgroundAnimation = () => {
+  return (
+    <div className="bg-animation">
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" />
+    </div>
+  );
+};
 
 const Dashboard = () => {
   return (
     <div className="app-container">
       <Sidebar />
-      <main className="main-content">
-        <ChatWindow />
-      </main>
+      <div className="main-wrapper">
+        <Header />
+        <main className="main-content">
+          <ChatWindow />
+        </main>
+      </div>
     </div>
   );
 };
@@ -28,7 +43,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, [token, user, fetchMe]);
 
   if (token && isLoading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-medium text-text-subtle">Initializing Talos...</span>
+        </motion.div>
+      </div>
+    );
   }
 
   if (!token) {
@@ -40,21 +66,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export const App = () => {
   return (
-    <div className="min-h-screen">
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        {/* Redirect any other route to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+    <div className="min-h-screen relative">
+      <BackgroundAnimation />
+      <AnimatePresence mode="wait">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
     </div>
   );
 };

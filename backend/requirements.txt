@@ -16,3 +16,4 @@ pytest
 pytest-asyncio
 mongomock-motor
 beanie
+chromadb

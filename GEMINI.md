@@ -37,6 +37,7 @@ This document takes precedence over all other architectural guidance and serves 
 
 - **Validation:** All incoming data must be validated using Zod (frontend) and Pydantic (backend).
 - **Security:** Never commit API keys or secrets. Use environment variables.
+- **Code Quality:** You MUST run `pre-commit run --all-files` (or target specific files) after making any code changes to ensure all linting, formatting, and safety checks pass before considering a task complete.
 - **Design & UX:** All UI development must strictly adhere to the standards defined in [DESIGN.md](./DESIGN.md).
   - Maintain a "Soft/Brand Focused" aesthetic.
   - Use Lucide icons only (`stroke-width={1.5}`).

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore, Message } from '@/entities/chat/model/store';
-import { Send, ChevronDown, ChevronUp, Bot, User, Mail } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, Bot, User, Mail, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const ChatWindow = () => {
   const { messages, sendMessage, currentSession, activeAgent } = useChatStore();
@@ -24,48 +25,39 @@ export const ChatWindow = () => {
 
   if (!currentSession) {
     return (
-      <div className="chat-empty-state">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="chat-empty-state">
         <div className="empty-state-icon">
-          <Bot size={32} strokeWidth={1.5} />
+          <Sparkles size={32} strokeWidth={1.5} />
         </div>
-        <h2 className="chat-empty-state-title">Welcome to Talos</h2>
+        <h2 className="chat-empty-state-title">Ready for your next breakthrough?</h2>
         <p className="chat-empty-state-desc">
-          Select a conversation from the sidebar or start a new one to begin your multi-agent
-          workflow.
+          Select a conversation from the sidebar or start a new one. Talos is powered by multiple
+          specialized agents to help you build faster.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
     <div className="chat-window">
-      <header className="chat-header">
-        <div className="flex items-center gap-3">
-          <div className="agent-badge">
-            <div className="agent-badge-dot" />
-            <span className="agent-badge-text">{activeAgent} Agent</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="btn btn-ghost" style={{ padding: 'var(--spacing-2)' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Share</span>
-          </button>
-        </div>
-      </header>
-
       <div className="chat-messages-container" ref={scrollRef}>
         <div className="chat-messages-inner">
-          {messages.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '5rem 0' }}>
-              <h1 className="chat-welcome-title">How can I help you today?</h1>
-              <p className="chat-welcome-desc">
-                Talos is ready to assist with coding, knowledge, and communication.
-              </p>
-            </div>
-          )}
-          {messages.map((msg) => (
-            <MessageItem key={msg.id} message={msg} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {messages.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ textAlign: 'center', padding: '8rem 0' }}
+              >
+                <h1 className="chat-welcome-title">How can I help you today?</h1>
+                <p className="chat-welcome-desc">
+                  Ask me to write code, analyze documents, or draft communications.
+                </p>
+              </motion.div>
+            ) : (
+              messages.map((msg, index) => <MessageItem key={msg.id} message={msg} index={index} />)
+            )}
+          </AnimatePresence>
           <div style={{ height: '8rem' }} />
         </div>
       </div>
@@ -89,7 +81,7 @@ export const ChatWindow = () => {
               className="chat-textarea"
             />
             <button onClick={handleSend} disabled={!input.trim()} className="send-btn">
-              <Send size={18} strokeWidth={2} />
+              <Send size={18} strokeWidth={2.5} />
             </button>
           </div>
           <p className="chat-disclaimer">Talos can make mistakes. Check important info.</p>
@@ -99,13 +91,18 @@ export const ChatWindow = () => {
   );
 };
 
-const MessageItem = ({ message }: { message: Message }) => {
+const MessageItem = ({ message, index }: { message: Message; index: number }) => {
   const isAssistant = message.role === 'assistant';
   const [showTrace, setShowTrace] = useState(false);
   const { retryMessage } = useChatStore();
 
   return (
-    <div className={clsx('message-item', isAssistant ? 'assistant' : 'user')}>
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, delay: 0.05 }}
+      className={clsx('message-item', isAssistant ? 'assistant' : 'user')}
+    >
       <div className="message-avatar">
         {isAssistant ? <Bot size={18} strokeWidth={1.5} /> : <User size={18} strokeWidth={1.5} />}
       </div>
@@ -212,19 +209,30 @@ const MessageItem = ({ message }: { message: Message }) => {
               {showTrace ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
               Reasoning Trace
             </button>
-            {showTrace && (
-              <div className="trace-container">
-                <div className="trace-header">
-                  <div className="trace-indicator" />
-                  <span
-                    style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-                  >
-                    Analysis Log
-                  </span>
-                </div>
-                {message.reasoning_trace}
-              </div>
-            )}
+            <AnimatePresence>
+              {showTrace && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="trace-container overflow-hidden"
+                >
+                  <div className="trace-header">
+                    <div className="trace-indicator" />
+                    <span
+                      style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
+                    >
+                      Analysis Log
+                    </span>
+                  </div>
+                  <div className="trace-content">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.reasoning_trace}
+                    </ReactMarkdown>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -234,15 +242,15 @@ const MessageItem = ({ message }: { message: Message }) => {
               href={`mailto:${message.email_draft.to || ''}?subject=${encodeURIComponent(
                 message.email_draft.subject
               )}&body=${encodeURIComponent(message.email_draft.body)}`}
-              className="btn btn-primary flex items-center gap-2 w-fit"
+              className="btn btn-primary flex items-center gap-2 w-fit shadow-lg"
               style={{
                 textDecoration: 'none',
-                padding: 'var(--spacing-2) var(--spacing-4)',
+                padding: 'var(--spacing-2.5) var(--spacing-5)',
                 borderRadius: 'var(--radius-full)',
                 fontSize: '0.875rem',
               }}
             >
-              <Mail size={16} strokeWidth={1.5} />
+              <Mail size={16} strokeWidth={2} />
               Open in Mail App
             </a>
           </div>
@@ -252,13 +260,12 @@ const MessageItem = ({ message }: { message: Message }) => {
           <div style={{ marginTop: 'var(--spacing-3)' }}>
             <button
               onClick={() => retryMessage(message.id)}
-              className="btn btn-ghost flex items-center gap-2 w-fit"
+              className="btn btn-surface flex items-center gap-2 w-fit"
               style={{
                 padding: 'var(--spacing-2) var(--spacing-4)',
                 borderRadius: 'var(--radius-lg)',
                 fontSize: '0.75rem',
                 color: 'var(--color-primary)',
-                border: '1px solid var(--color-primary)',
               }}
             >
               Retry Response
@@ -266,6 +273,6 @@ const MessageItem = ({ message }: { message: Message }) => {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
